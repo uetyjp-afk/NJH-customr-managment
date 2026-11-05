@@ -173,7 +173,7 @@ KEEP.forEach(k=>{const v=ls.get('njh_'+k);if(v!==null)$(k).value=v});
 /* 顧客管理(../customer.html)からの引き継ぎ */
 let PRE=null;(function(){try{const q=new URLSearchParams(location.search);if(!q.has('cust')&&!q.has('shop'))return;
 const m={shop:'shop',staff:'contact',tel:'tel',fax:'fax'};Object.keys(m).forEach(k=>{if(q.get(k)){$(m[k]).value=q.get(k);ls.set('njh_'+m[k],q.get(k))}});
-PRE={name:q.get('cust')||'',kana:q.get('kana')||'',age:q.get('age')||'',sex:q.get('sex')||'',done:{}};
+PRE={name:q.get('cust')||'',kana:q.get('kana')||'',age:q.get('age')||'',sex:q.get('sex')||'',done:{}};try{PRE.au=JSON.parse(q.get('au')||'null')}catch(e){PRE.au=null}
 history.replaceState(null,'',location.pathname+location.hash)}catch(e){}})();
 function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 let FM=null,ST={},IMG=null,ready=false;
@@ -220,17 +220,18 @@ function buildAu(){
   const tbl=document.createElement('table');tbl.style.cssText='border-collapse:collapse;font-size:12px;max-width:100%';
   let h='<tr><th></th>'+fr.map(f=>'<th>'+((+f)>=1000?(+f)/1000+'k':f)+'</th>').join('')+'</tr>';
   ['R','L'].forEach(e=>{h+='<tr><th style="color:var(--'+(e==='R'?'r':'b')+')">'+(e==='R'?'右○':'左×')+'</th>'+fr.map(f=>'<td><input type="number" inputmode="numeric" step="5" min="-10" max="120" data-e="'+e+'" data-f="'+f+'" style="width:3.2em;padding:5px 2px;text-align:center"></td>').join('')+'</tr>'});
+  ['R','L'].forEach(e=>{h+='<tr><th style="color:var(--'+(e==='R'?'r':'b')+')">'+(e==='R'?'骨導 右[':'骨導 左]')+'</th>'+fr.map(f=>'<td><input type="number" inputmode="numeric" step="5" min="-10" max="120" data-b="1" data-e="'+e+'" data-f="'+f+'" style="width:3.2em;padding:5px 2px;text-align:center"></td>').join('')+'</tr>'});
   tbl.innerHTML=h;
-  tbl.addEventListener('input',ev=>{const i=ev.target;if(!i.dataset||!i.dataset.e)return;ST.au=ST.au||{R:{},L:{}};ST.au[i.dataset.e]=ST.au[i.dataset.e]||{};ST.au[i.dataset.e][i.dataset.f]=i.value;upd()});
+  tbl.addEventListener('input',ev=>{const i=ev.target;if(!i.dataset||!i.dataset.e)return;if(i.dataset.b){ST.auBC=ST.auBC||{R:{},L:{}};ST.auBC[i.dataset.e]=ST.auBC[i.dataset.e]||{};ST.auBC[i.dataset.e][i.dataset.f]=i.value}else{ST.au=ST.au||{R:{},L:{}};ST.au[i.dataset.e]=ST.au[i.dataset.e]||{};ST.au[i.dataset.e][i.dataset.f]=i.value}upd()});
   fs.appendChild(tbl);
   const avg=document.createElement('p');avg.className='note';avg.id='auAvg';fs.appendChild(avg);
-  const hint=document.createElement('p');hint.className='note';hint.textContent='右耳は○、左耳は×で原本のオージオグラム欄に描画します。';fs.appendChild(hint);
+  const hint=document.createElement('p');hint.className='note';hint.textContent='気導は必須です（右耳は○、左耳は×）。骨導は任意で、右耳は [ 、左耳は ] で描画します。顧客管理から開くと、保存済みの気導・骨導が転記されます。';fs.appendChild(hint);
   const g=$('groups');g.insertBefore(fs,g.firstChild);
   syncAu();
 }
 function syncAu(){
   const box=document.getElementById('auBox');if(!box||!FM||!FM.audio)return;
-  box.querySelectorAll('input[data-e]').forEach(i=>{const v=(ST.au&&ST.au[i.dataset.e]&&ST.au[i.dataset.e][i.dataset.f])||'';if(document.activeElement!==i&&i.value!==String(v))i.value=v});
+  box.querySelectorAll('input[data-e]').forEach(i=>{const src=i.dataset.b?ST.auBC:ST.au;const v=(src&&src[i.dataset.e]&&src[i.dataset.e][i.dataset.f])||'';if(document.activeElement!==i&&i.value!==String(v))i.value=v});
   const avg=document.getElementById('auAvg');
   if(avg){const parts=[];['R','L'].forEach(e=>{const au=ST.au&&ST.au[e];if(!au)return;const vs=[500,1000,2000,4000].map(f=>au[f]);const done=vs.filter(v=>v!=null&&String(v).trim()!=='').length;if(done===4){const a=vs.reduce((s,v)=>s+(+v),0)/4;parts.push((e==='R'?'右':'左')+' 平均 '+(Math.round(a*10)/10)+' dB')}else if(done>0)parts.push((e==='R'?'右':'左')+' 入力中 '+done+'/4')});avg.textContent=parts.length?('四分法平均（500・1k・2k・4k）: '+parts.join('　／　')):''}
 }
@@ -280,7 +281,8 @@ function openForm(f){
     if(draft.dy!=null)$('dy').value=draft.dy;
     if(draft.gender){ST.gender=draft.gender;document.querySelectorAll('#gender input').forEach(i=>{i.checked=i.value===draft.gender;i.dataset.on=i.checked?'1':''})}
   }
-  if(usePre){PRE.done[f.id]=1;$('name').value=PRE.name;$('kana').value=PRE.kana;$('age').value=PRE.age;if(PRE.sex){ST.gender=PRE.sex;document.querySelectorAll('#gender input').forEach(i=>{i.checked=i.value===PRE.sex;i.dataset.on=i.checked?'1':''})}}
+  if(usePre){PRE.done[f.id]=1;$('name').value=PRE.name;$('kana').value=PRE.kana;$('age').value=PRE.age;
+  if(PRE.au&&f.audio){const mp=s=>{const o={};Object.keys(f.audio.x).forEach(fr=>{const v=s?s[fr]:'';if(v!==''&&v!=null)o[fr]=v});return o};ST.au={R:mp(PRE.au.ac&&PRE.au.ac.R),L:mp(PRE.au.ac&&PRE.au.ac.L)};ST.auBC={R:mp(PRE.au.bc&&PRE.au.bc.R),L:mp(PRE.au.bc&&PRE.au.bc.L)}}if(PRE.sex){ST.gender=PRE.sex;document.querySelectorAll('#gender input').forEach(i=>{i.checked=i.value===PRE.sex;i.dataset.on=i.checked?'1':''})}}
   FM.groups.forEach(g=>{if(g.auto&&showG(g)){ST[g.id+'R']=ST[g.id+'R']||g.auto;ST[g.id+'L']=ST[g.id+'L']||g.auto}});
   $('fax').closest('div').style.display=f.mold?'none':'';$('age').closest('.row').style.display=f.mold?'none':'';buildAu();
   ready=false;cv.width=f.size[0];cv.height=f.size[1];IMG=new Image();IMG.onload=()=>{ready=true;refresh();upd();saveHaDraft()};IMG.src=BGMAP[f.id];$('v3').hidden=false;window.scrollTo(0,0)
@@ -292,6 +294,7 @@ function upd(){if(!FM)return;syncAu();$('dxv').textContent=$('dx').value;$('dyv'
  FM.groups.forEach(g=>{if(g.auto&&showG(g)){ST[g.id+'R']=g.auto;ST[g.id+'L']=g.auto}});
  const w=[];if(!$('shop').value)w.push('貴店名');if(!$('name').value)w.push('お客様名');
  FM.groups.forEach(g=>{if(!showG(g)||!g.req||g.auto)return;const ok=g.t==='ear'?(ST[g.id+'R']||ST[g.id+'L']):g.t==='multi'?(ST[g.id]||[]).length:ST[g.id];if(!ok)w.push(g.title.replace(/^[①②③] /,''))});
+ if(FM.audio){const au=ST.au||{};const hasAu=['R','L'].some(e=>au[e]&&Object.values(au[e]).some(v=>v!==''&&v!=null));if(!hasAu)w.push('気導オージオグラム')}
  const mold=FM.groups.some(g=>showG(g)&&(g.t==='ear'?[ST[g.id+'R'],ST[g.id+'L']]:[ST[g.id]]).some(v=>v&&MOLD.test(v)&&(g.id==='tip'||g.id==='tipSlim'||g.id==='rcv'||g.id==='rn')));
  FM.groups.forEach(g=>{document.getElementById('g_'+g.id).hidden=!showG(g)||!!g.auto;g.items.forEach(i=>{if(g.off&&g.off[i.k]){document.querySelectorAll(`#g_${g.id} input[value="${i.k}"]`).forEach(x=>{x.disabled=offI(g,i.k)})}})});
  FM.groups.forEach(g=>{if(g.t==='radio'||g.t==='multi')g.items.forEach(i=>{if(g.off&&g.off[i.k]){}})});
@@ -312,6 +315,7 @@ function draw(){if(!ready||!FM)return;const W=cv.width,Hh=cv.height,ox=+$('dx').
   else if(g.t==='txt'){['R','L'].forEach(e=>{if(ST[g.id+e])T(ST[g.id+e],g[e][0],g[e][1],g.sz||16)})}
   else{const v=ST[g.id];g.items.forEach(i=>{if(g.t==='multi'?(v||[]).includes(i.k):v===i.k){if(i.e){cx.save();cx.lineWidth=2*S;cx.strokeStyle='#111';cx.beginPath();cx.ellipse((i.e[0]+ox)*S,(i.e[1]+oy)*S,i.e[2]*S,i.e[3]*S,0,0,7);cx.stroke();cx.restore()}else{const series=ST.series;const p=i.bySeries&&i.bySeries[series]?i.bySeries[series]:null;const q=p&&Array.isArray(p)?p:((i.bySeries&&series in i.bySeries)?null:(i.x!=null?[i.x,i.y]:null));if(q)CK(...q)}}})}});
  if(FM.audio&&ST.au){const A=FM.audio;['R','L'].forEach(e=>{const au=ST.au[e];if(!au)return;const pts=Object.keys(A.x).map(Number).filter(f=>au[f]!=null&&String(au[f]).trim()!=='').sort((a,b)=>a-b).map(f=>[A.x[f],A.y0+(+au[f])*A.k]);if(!pts.length)return;cx.save();cx.strokeStyle=e==='R'?'#d01818':'#1747c8';cx.fillStyle='#fff';cx.lineWidth=1.8*S;cx.beginPath();pts.forEach((p,i)=>i?cx.lineTo((p[0]+ox)*S,(p[1]+oy)*S):cx.moveTo((p[0]+ox)*S,(p[1]+oy)*S));cx.stroke();pts.forEach(p=>{const x=(p[0]+ox)*S,y=(p[1]+oy)*S;if(e==='R'){cx.beginPath();cx.arc(x,y,3.4*S,0,7);cx.fill();cx.stroke()}else{const r=3.2*S;cx.beginPath();cx.moveTo(x-r,y-r);cx.lineTo(x+r,y+r);cx.moveTo(x+r,y-r);cx.lineTo(x-r,y+r);cx.lineWidth=2.4*S;cx.stroke();cx.lineWidth=1.8*S}});cx.restore()})}
+ if(FM.audio&&ST.auBC){const A=FM.audio;['R','L'].forEach(e=>{const au=ST.auBC[e];if(!au)return;const pts=Object.keys(A.x).map(Number).filter(f=>au[f]!=null&&String(au[f]).trim()!=='').sort((a,b)=>a-b).map(f=>[A.x[f],A.y0+(+au[f])*A.k]);if(!pts.length)return;cx.save();cx.strokeStyle=e==='R'?'#d01818':'#1747c8';cx.lineWidth=1.4*S;cx.beginPath();pts.forEach((p,i)=>i?cx.lineTo((p[0]+ox)*S,(p[1]+oy)*S):cx.moveTo((p[0]+ox)*S,(p[1]+oy)*S));cx.stroke();pts.forEach(p=>{const x=(p[0]+ox)*S,y=(p[1]+oy)*S,r=3.4*S;cx.lineWidth=1.8*S;cx.beginPath();if(e==='R'){cx.moveTo(x+r,y-r);cx.lineTo(x-r*.4,y-r);cx.lineTo(x-r*.4,y+r);cx.lineTo(x+r,y+r)}else{cx.moveTo(x-r,y-r);cx.lineTo(x+r*.4,y-r);cx.lineTo(x+r*.4,y+r);cx.lineTo(x-r,y+r)}cx.stroke()});cx.restore()})}
  if(h.note){const n=$('note').value.split('\n');const ln=[];const NW=h.nw||56,NL=h.nl||3;n.forEach(s=>{while(s.length>NW){ln.push(s.slice(0,NW));s=s.slice(NW)}ln.push(s)});ln.slice(0,NL).forEach((s,i)=>T(s,h.note[0],h.note[1]+i*15,12))}}
 /* ---------- output ---------- */
 function ensureDrawn(){

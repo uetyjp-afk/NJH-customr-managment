@@ -123,6 +123,9 @@ function spBody(P,S){return `<h3>単語（からす・りんご…）正しく�
 function reqDoc(k){const c=cur(),s=D.shop,p=new URLSearchParams({form:k,shop:s.name||'',staff:s.staff||'',tel:s.tel||'',fax:s.fax||'',cust:c.name||'',kana:c.kana||''});p.set('cid',c.id);location.href='./order/repair/index.html?'+p}
 function order(f){const c=cur(),s=D.shop,p=new URLSearchParams({shop:s.name||'',staff:s.staff||'',tel:s.tel||'',fax:s.fax||'',sno:s.sno||'',cust:c.name||'',kana:c.kana||''});p.set('cid',c.id);
 if(c.sex!=='')p.set('sex',c.sex==='0'?'男':'女');const a=age(c.birth);if(a!=='')p.set('age',a);
+const hasV=o=>o&&Object.values(o).some(v=>v!==''&&v!=null);
+const auSets=(c.au||[]).filter(x=>x&&(hasV((x.ac||{}).R)||hasV((x.ac||{}).L)||hasV((x.bc||{}).R)||hasV((x.bc||{}).L)));
+if(auSets.length){const at=auSets.reduce((x,y)=>String(y.date||'')>String(x.date||'')?y:x);const pack=s=>{const o={};['R','L'].forEach(e=>{o[e]={};FR.forEach(f=>{const v=s&&s[e]?s[e][f]:'';if(v!==''&&v!=null)o[e][f]=v})});return o};p.set('au',JSON.stringify({date:at.date||'',ac:pack(at.ac),bc:pack(at.bc)}))}
 if(f==='insera_sr'||f==='beltone_custom'){p.set('form',f==='insera_sr'?'smr':'bel');location.href='./order/custom/index.html?'+p;return}
 location.href='./order/index.html?'+p+'#form-'+f}
 $('#back').onclick=()=>{sv();V.mode='list';render()};$('#sb').onclick=()=>{V.mode='setup';render()};

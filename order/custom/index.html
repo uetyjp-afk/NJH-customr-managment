@@ -113,6 +113,7 @@ try{
   if(q.get("kana"))V.kana=q.get("kana");
   if(q.get("sex")==="男")V.sex=0; if(q.get("sex")==="女")V.sex=1;
   if(q.get("age"))V.age=q.get("age");
+  if(q.get("au")){try{const au=JSON.parse(q.get("au"));["R","L"].forEach(e=>{const ac=(au.ac||{})[e]||{},bc=(au.bc||{})[e]||{};Object.keys(ac).forEach(f=>{if(ac[f]!==''&&ac[f]!=null)V["a"+e+f]=ac[f]});Object.keys(bc).forEach(f=>{if(bc[f]!==''&&bc[f]!=null)V["b"+e+f]=bc[f]})});if(au.date&&!V.mdate){const d=String(au.date).split("-");if(d.length===3)V.mdate=(+d[1])+"/"+(+d[2])}}catch(e){}}
   if(q.get("tel")){const t=q.get("tel").replace(/[^0-9]/g,"");if(t.length>=10){V.tel1=t.slice(0,t.length-8);V.tel2=t.slice(-8,-4);V.tel3=t.slice(-4)}}
   if(q.get("form")==="bel"){/* select bel later */}
 }catch(e){}
@@ -348,6 +349,10 @@ function build(){snapSoon();
       if(!act(e))return;
       h+="<tr><th>"+(e==="R"?"右○":"左×")+"</th>"+fr.map(x=>'<td><input type="number" inputmode="numeric" step="5" min="-10" max="120" data-e="'+e+'" data-f="'+x+'" value="'+(V["a"+e+x]??"")+'"></td>').join("")+"</tr>";
     });
+    ["R","L"].forEach(e=>{
+      if(!act(e))return;
+      h+="<tr><th>"+(e==="R"?"右[":"左]")+"</th>"+fr.map(x=>'<td><input type="number" inputmode="numeric" step="5" min="-10" max="120" data-b="1" data-e="'+e+'" data-f="'+x+'" value="'+(V["b"+e+x]??"")+'"></td>').join("")+"</tr>";
+    });
     a.innerHTML=h+"</table>";
     const avgEl=el("p",{className:"hint"});
     const updAvg=()=>{
@@ -361,14 +366,14 @@ function build(){snapSoon();
       });
       avgEl.textContent=parts.length?("四分法平均（500・1k・2k・4k）: "+parts.join("　／　")):"";
     };
-    a.oninput=ev=>{const i=ev.target;V["a"+i.dataset.e+i.dataset.f]=i.value;save();updAvg();draw()};
+    a.oninput=ev=>{const i=ev.target;V[(i.dataset.b?"b":"a")+i.dataset.e+i.dataset.f]=i.value;save();updAvg();draw()};
     u.appendChild(a);
     u.appendChild(avgEl);
     updAvg();
     const m=el("input",{type:"text",value:V.mdate||"",placeholder:"測定日 例 11/4"});
     m.oninput=()=>{V.mdate=m.value;draw()};
     u.appendChild(row("測定日",m));
-    u.appendChild(el("p",{className:"hint"},"右耳は○、左耳は×で原本のオージオグラム欄に描画します。"));
+    u.appendChild(el("p",{className:"hint"},"気導は必須です（右耳は○、左耳は×）。骨導は任意で、右耳は [ 、左耳は ] で描画します。顧客管理から開くと、保存済みの気導・骨導が転記されます。"));
   }
 
   // 備考
@@ -380,7 +385,7 @@ function build(){snapSoon();
   const acts=el("div",{className:"mini-actions"});
   const clear=el("button",{type:"button"},"この入力をクリア");
   clear.onclick=()=>{["bY","bM","bD","cust","kana","free","nmText","mdate","total"].forEach(k=>delete V[k]);
-    Object.keys(V).filter(k=>k.startsWith("aR")||k.startsWith("aL")).forEach(k=>delete V[k]);
+    Object.keys(V).filter(k=>k.startsWith("aR")||k.startsWith("aL")||k.startsWith("bR")||k.startsWith("bL")).forEach(k=>delete V[k]);
     build()};
   acts.appendChild(clear);
   u.appendChild(acts);
@@ -475,6 +480,26 @@ function draw(){
       });
       ctx.restore();
     });
+    ["R","L"].forEach(e=>{
+      if(!act(e))return;
+      const pts=fr.filter(f=>nn(V["b"+e+f])!=="").map(f=>[A.x[f],py(+V["b"+e+f])]);
+      if(!pts.length)return;
+      ctx.save();
+      ctx.strokeStyle=e==="R"?"#d01818":"#1747c8";
+      ctx.lineWidth=.8*S;
+      ctx.beginPath();
+      pts.forEach((p,i)=>i?ctx.lineTo(p[0]*S,p[1]*S):ctx.moveTo(p[0]*S,p[1]*S));
+      ctx.stroke();
+      ctx.lineWidth=1.2*S;
+      pts.forEach(p=>{
+        const x=p[0]*S,y=p[1]*S,r=3.4*S;
+        ctx.beginPath();
+        if(e==="R"){ctx.moveTo(x+r,y-r);ctx.lineTo(x-r*.4,y-r);ctx.lineTo(x-r*.4,y+r);ctx.lineTo(x+r,y+r)}
+        else{ctx.moveTo(x-r,y-r);ctx.lineTo(x+r*.4,y-r);ctx.lineTo(x+r*.4,y+r);ctx.lineTo(x-r,y+r)}
+        ctx.stroke();
+      });
+      ctx.restore();
+    });
     if(nn(V.mdate)){ctx.fillStyle="#0b2a6b";fit(nn(V.mdate),42,7,"l",A.dx,A.dy)}
   }
 }
@@ -483,6 +508,7 @@ function validateOrder(){
   const missing=[];
   const labels={shop:"貴店名",staff:"ご担当者",cust:"お客様名",g:"グレード",pw:"パワー",shape:"器種",ch:"充電器"};
   ["shop","staff","cust"].forEach(k=>{if(!String(V[k]||"").trim())missing.push(labels[k]||k)});
+  if(cur.audio){const hasAu=["R","L"].some(e=>act(e)&&Object.keys(cur.audio.x).some(f=>String(V["a"+e+f]??"").trim()!==""));if(!hasAu)missing.push("気導オージオグラム")}
   if(cur.id==="smr"){if(V.g==null)missing.push("グレード");if(V.pw==null)missing.push("パワー")}
   if(cur.id==="bel"){if(V.shape===1&&V.pw===0)return{ok:false,message:"カスタムDWCにLPはありません。パワーを選び直してください。"};if(V.shape==null)missing.push("器種");if(act("R")&&V.pwR==null&&act("L")&&V.pwL==null&&V.pw==null){/* power is ear */}}
   if(V.nm){const n=String(V.nmText||"").trim();if(!n)missing.push("名入れ文字");else if(!namePattern.test(n))return{ok:false,message:"名入れはひらがな・カタカナ・アルファベットで入力してください。"}}

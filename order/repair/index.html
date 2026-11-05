@@ -40,7 +40,7 @@ a.back{color:#fff;font-size:12px;opacity:.9;text-decoration:none}
 <body>
 <header>
 <h1>修理・紛失の依頼書</h1>
-<p>補聴器を選ぶと 店名・氏名・シリアル・購入日 が自動で入ります。<a class="back" href="../../index.html">← チャットに戻る</a></p>
+<p>補聴器を選ぶと 店名・氏名・シリアル・購入日 が自動で入ります。<a class="back" href="../../index.html" style="background:#ff7a00;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap">🏠 ホームに戻る</a></p>
 </header>
 <main>
 <nav>
@@ -91,7 +91,7 @@ if(V.haSel<0||V.haSel>=HAS.length)V.haSel=HAS.length-1;
 function deriveSerial(){const c=V.common;if(V.ear==='R')return c.noR||'';if(V.ear==='L')return c.noL||'';return[c.noR&&'右 '+c.noR,c.noL&&'左 '+c.noL].filter(Boolean).join('　')}
 function applyHa(){const rec=HAS[V.haSel];if(!rec)return;const c=V.common;c.buy=rec.buy||'';const rm=rec.R&&rec.R.model||'',lm=rec.L&&rec.L.model||'';
  c.model=V.ear==='R'&&rm?rm:V.ear==='L'&&lm?lm:(rm&&lm&&rm!==lm?rm+' / '+lm:rm||lm);
- c.noR=rec.R&&rec.R.no||'';c.noL=rec.L&&rec.L.no||'';V.loss.serial=deriveSerial()}
+ c.noR=rec.R&&rec.R.no||'';c.noL=rec.L&&rec.L.no||'';V.loss.serial=deriveSerial();if(rec.lgAmt)V.loss.amount=rec.lgAmt}
 function getP(p){return p.split('.').reduce((o,k)=>o[k],V)}
 function setP(p,v){const ks=p.split('.');const o=ks.slice(0,-1).reduce((o,k)=>o[k],V);o[ks[ks.length-1]]=v}
 function chipsHtml(path,items,single){const cur=getP(path);return `<div class="chips">${items.map(([id,label])=>{const on=single?(cur===id||(cur===true&&id==='1')):(cur||[]).includes(id);return `<button type="button" class="chip${on?' on':''}" data-chip="${path}|${id}|${single?1:0}">${esc(label)}</button>`}).join('')}</div>`}

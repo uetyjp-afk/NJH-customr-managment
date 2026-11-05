@@ -35,6 +35,12 @@ canvas{width:100%;height:auto;border:1px solid var(--line);border-radius:8px;bac
 #linkInfo{font-size:13px;color:#1d4e89;font-weight:700;margin-bottom:8px}
 a.back{color:#fff;font-size:12px;opacity:.9;text-decoration:none}
 .mini{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+/* レスポンシブ追加 */
+@media(min-width:1024px){main{max-width:980px}}
+@media(max-width:768px){input[type=text],input[type=date],input[type=number],select,textarea{font-size:16px}}
+@media(max-width:560px){.g3{grid-template-columns:1fr 1fr}.btns button{min-width:46%}}
+@media(max-width:400px){.g3{grid-template-columns:1fr}}
 </style>
 </head>
 <body>

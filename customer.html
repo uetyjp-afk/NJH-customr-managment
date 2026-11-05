@@ -21,6 +21,10 @@ td input{width:52px;padding:5px 2px;text-align:center}th{background:var(--gl)}.R
 .pct{font-size:20px;font-weight:700}.warn{background:#fff3f0;border:1px solid #f1b5a8;border-radius:8px;padding:6px 10px;color:#a3260f;margin:6px 0}
 .ok td,.ok th{font-size:13px}.chk td{padding:3px 6px}.chk td:first-child{text-align:left}
 .ord{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ord button{padding:12px 6px}.filters{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:8px;margin-top:10px}.badge{display:inline-block;background:var(--gl);color:var(--g);border-radius:999px;padding:2px 7px;margin:2px;font-size:11px}.repair-row{display:grid;grid-template-columns:125px 1fr 105px 34px;gap:6px;align-items:center;margin-bottom:7px}@media(max-width:560px){.filters{grid-template-columns:1fr 1fr}.repair-row{grid-template-columns:1fr 1fr}.repair-row textarea{grid-column:1/-1}}
+
+/* レスポンシブ追加: PCでは広く、スマホでは入力時に画面がズームしないように */
+@media(min-width:1024px){main{max-width:1120px}.ord{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:768px){input,select,textarea{font-size:16px}}
 </style></head><body>
 <header><a href="./index.html" style="background:#ff7a00;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap">🏠 ホームに戻る</a><button id="back" hidden style="background:#1d4e89;color:#fff;font-weight:700;border:0;border-radius:999px;padding:7px 14px;font-size:14px;white-space:nowrap;cursor:pointer">💾 保存して戻る</button><b id="ht">NJH 顧客管理</b><button id="sb">店舗設定</button><button id="bk">バックアップ</button></header>
 <main id="m"></main>
@@ -150,9 +154,29 @@ const wb='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xml
 const wbRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+sheets.map((s,i)=>'<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>').join('')+'</Relationships>';
 const files=[{name:'[Content_Types].xml',data:enc.encode(ct)},{name:'_rels/.rels',data:enc.encode(rels)},{name:'xl/workbook.xml',data:enc.encode(wb)},{name:'xl/_rels/workbook.xml.rels',data:enc.encode(wbRels)},...sheets.map((s,i)=>({name:'xl/worksheets/sheet'+(i+1)+'.xml',data:enc.encode(sheetXml(s[1]))}))];
 return zipStore(files)}
-$('#bk').onclick=()=>{const k=prompt('1=バックアップ保存（JSON：復元用）　2=バックアップ保存（Excel：閲覧用）　3=バックアップから復元（JSON）','1');if(k=='1'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D)],{type:'application/json'}));a.download='顧客データ_'+today()+'.json';a.click()}
+function mergeData(src){
+let add=0,mrg=0;
+const key=c=>String(c.name||'').replace(/\s/g,'')+'|'+(c.birth||'');
+const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+const mergeArr=(dst,arr)=>{dst=dst||[];(arr||[]).forEach(x=>{if(!dst.some(y=>same(x,y)))dst.push(x)});return dst};
+for(const ic of src.cs||[]){
+const ex=ic.name?D.cs.find(c=>key(c)===key(ic)):null;
+if(!ex){let nid=Date.now()+add;while(D.cs.some(c=>c.id===nid))nid++;ic.id=nid;D.cs.push(ic);add++;continue}
+for(const f of['kana','sex','tel','addr'])if(!ex[f]&&ic[f])ex[f]=ic[f];
+if(!ex.memo&&ic.memo)ex.memo=ic.memo;
+ex.au=mergeArr(ex.au,ic.au);ex.ha=mergeArr(ex.ha,ic.ha);
+ex.repairs=mergeArr(ex.repairs,ic.repairs);ex.orders=mergeArr(ex.orders,ic.orders);ex.reqs=mergeArr(ex.reqs,ic.reqs);
+ex.sps=mergeArr(ex.sps,ic.sps);ex.consults=mergeArr(ex.consults,ic.consults);
+const spEmpty=s=>!s||(!s.date&&!Object.keys(s.w||{}).length&&!Object.keys(s.s||{}).length);
+if(spEmpty(ex.sp)&&!spEmpty(ic.sp))ex.sp=ic.sp;
+ex.cj=ex.cj||{};for(const k in(ic.cj||{}))if(ic.cj[k])ex.cj[k]=true;
+mrg++}
+D.cs.forEach(c=>{const n=parseInt(c.no,10);if(n&&n>D.seq)D.seq=n});
+return{add,mrg}}
+$('#bk').onclick=()=>{const k=prompt('1=バックアップ保存（JSON：復元用）　2=バックアップ保存（Excel：閲覧用）　3=バックアップから復元（JSON：今のデータと置き換え）　4=データを合体（他の店舗・端末のJSONを取り込む）','1');if(k=='1'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D)],{type:'application/json'}));a.download='顧客データ_'+today()+'.json';a.click()}
 else if(k=='2'){const a=document.createElement('a');a.href=URL.createObjectURL(xlsxBlob(D));a.download='顧客データ_'+today()+'.xlsx';a.click()}
-else if(k=='3'){const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=async()=>{try{const j=JSON.parse(await i.files[0].text());if(!Array.isArray(j.cs))throw 0;if(confirm('現在のデータを置き換えます。よろしいですか？')){D=j;sv();V.mode='list';render()}}catch(e){alert('読み込めませんでした')}};i.click()}};
+else if(k=='3'){const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=async()=>{try{const j=JSON.parse(await i.files[0].text());if(!Array.isArray(j.cs))throw 0;if(confirm('現在のデータを置き換えます。よろしいですか？')){D=j;sv();V.mode='list';render()}}catch(e){alert('読み込めませんでした')}};i.click()}
+else if(k=='4'){const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=async()=>{try{const j=JSON.parse(await i.files[0].text());if(!Array.isArray(j.cs))throw 0;const r=mergeData(j);sv();V.mode='list';render();alert('取り込みました：新規 '+r.add+' 件、同じ顧客（氏名と生年月日が一致）に統合 '+r.mrg+' 件')}catch(e){alert('読み込めませんでした')}};i.click()}};
 try{const oc=localStorage.getItem('njh_open_cust');if(oc){localStorage.removeItem('njh_open_cust');let o=null;try{o=JSON.parse(oc)}catch(e){}const cid=o&&o.id!=null?o.id:oc;const c=D.cs.find(x=>String(x.id)===String(cid));if(c&&D.shop.name){V.id=c.id;V.mode='edit';V.tab=(o&&o.tab)||'b'}}}catch(e){}
 render();
 </script></body></html>

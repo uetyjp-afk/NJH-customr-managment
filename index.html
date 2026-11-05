@@ -1149,17 +1149,20 @@ img,canvas,table{max-width:100%}
     const faqData = {
         "order_app": {
             "q1": {
-                text: "Unitron 注文書を作成（5様式）",
+                text: "Unitron 注文書を作成（7様式）",
                 answer: `<div class="note">機種を選ぶと入力画面が開きます（PDF保存・印刷/FAX・メール・LINE共有）</div>
+                    <a class="in-app" href="./order/index.html#form-insera_sr">Insera Smile R（充電式オーダーメイド）</a>
                     <a class="in-app" href="./order/index.html#form-moxisr">Moxi S-R</a>
                     <a class="in-app" href="./order/index.html#form-vivante">Moxi Vivante R / 312 / RS</a>
                     <a class="in-app" href="./order/index.html#form-stride">Stride V-PR</a>
                     <a class="in-app" href="./order/index.html#form-stride_sp">Stride V-SP / UP</a>
-                    <a class="in-app" href="./order/index.html#form-moxiblu">Moxi Blu R / 312</a>`
+                    <a class="in-app" href="./order/index.html#form-moxiblu">Moxi Blu R / 312</a>
+                    <a class="in-app" href="./order/index.html#form-uni_mold">RIC用モールド</a>`
             },
             "q2": {
-                text: "Beltone 注文書を作成（9様式）",
+                text: "Beltone 注文書を作成（11様式）",
                 answer: `<div class="note">機種を選ぶと入力画面が開きます（PDF保存・印刷/FAX・メール・LINE共有）</div>
+                    <a class="in-app" href="./order/index.html#form-beltone_custom">充電式オーダーメイド</a>
                     <a class="in-app" href="./order/index.html#form-env6264">Envision 62S / 64DW</a>
                     <a class="in-app" href="./order/index.html#form-envcros">Envision クロス送信機</a>
                     <a class="in-app" href="./order/index.html#form-commence">Commence 62 / 64DW</a>
@@ -1168,7 +1171,8 @@ img,canvas,table{max-width:100%}
                     <a class="in-app" href="./order/index.html#form-rely_ric">Rely RIC</a>
                     <a class="in-app" href="./order/index.html#form-rely_bte">Rely BTE</a>
                     <a class="in-app" href="./order/index.html#form-boost_max">Boost Max S</a>
-                    <a class="in-app" href="./order/index.html#form-boost_ultra">Boost Ultra</a>`
+                    <a class="in-app" href="./order/index.html#form-boost_ultra">Boost Ultra</a>
+                    <a class="in-app" href="./order/index.html#form-bel_mold">RIC用モールド</a>`
             },
             "q3": {
                 text: "全様式の一覧から選ぶ",
@@ -1184,11 +1188,13 @@ img,canvas,table{max-width:100%}
             },
             "q2": {
                 text: "Beltone 充電式オーダーメイド注文書",
-                answer: `<a href="${BASE}/uploads/202503_Beltone_order.pdf" target="_blank" rel="noopener">Beltone 充電式オーダーメイド注文書 (PDF)</a>`
+                answer: `<a href="${BASE}/uploads/202503_Beltone_order.pdf" target="_blank" rel="noopener">Beltone 充電式オーダーメイド注文書 (PDF)</a>
+                    <a class="in-app" href="./order/index.html#form-beltone_custom">📱 アプリで入力して作成（Beltone 充電式オーダーメイド）</a>`
             },
             "q3": {
                 text: "Unitron 充電式オーダーメイド注文書",
-                answer: `<a href="${BASE}/uploads/202604_InseraS-R.pdf" target="_blank" rel="noopener">Unitron 充電式オーダーメイド注文書 (PDF)</a>`
+                answer: `<a href="${BASE}/uploads/202604_InseraS-R.pdf" target="_blank" rel="noopener">Unitron 充電式オーダーメイド注文書 (PDF)</a>
+                    <a class="in-app" href="./order/index.html#form-insera_sr">📱 アプリで入力して作成（Insera Smile R）</a>`
             },
             "q4": {
                 text: "イヤーモールド注文書 (PDF / Excel)",
@@ -1198,7 +1204,9 @@ img,canvas,table{max-width:100%}
             "q5": {
                 text: "RICモールド注文書 (Beltone / Unitron)",
                 answer: `<a href="${BASE}/uploads/202511_bel_mold.pdf" target="_blank" rel="noopener">Beltone RICモールド注文書</a>
-                    <a href="${BASE}/uploads/202602_uni_mold.pdf" target="_blank" rel="noopener">Unitron RICモールド注文書</a>`
+                    <a href="${BASE}/uploads/202602_uni_mold.pdf" target="_blank" rel="noopener">Unitron RICモールド注文書</a>
+                    <a class="in-app" href="./order/index.html#form-bel_mold">📱 アプリで入力して作成（Beltone RICモールド）</a>
+                    <a class="in-app" href="./order/index.html#form-uni_mold">📱 アプリで入力して作成（Unitron RICモールド）</a>`
             }
         },
         "order_ric": {
@@ -1236,12 +1244,14 @@ img,canvas,table{max-width:100%}
             "q1": {
                 text: "修理依頼書 / 再作依頼書など",
                 answer: `<div class="note">印刷してお使いください（修理依頼書は2026年4月新版）</div>
+                    <a class="in-app" href="./order/repair/index.html?form=repair">📱 アプリで入力して作成（修理依頼書）</a>
                     <a href="${BASE}/uploads/202604_%E4%BF%AE%E7%90%86%E4%BE%9D%E9%A0%BC%E6%9B%B8.pdf" target="_blank" rel="noopener">補聴器 修理依頼書</a>
                     <a href="${BASE}/uploads/_10.pdf" target="_blank" rel="noopener">オーダーメイド再作依頼書</a>`
             },
             "q2": {
                 text: "安心ほしょう / 紛失保証 注文書",
                 answer: `<a href="${BASE}/uploads/202604_%E5%AE%89%E5%BF%83%E3%81%BB%E3%81%97%E3%82%87%E3%81%86%E6%B3%A8%E6%96%87%E6%9B%B8.pdf" target="_blank" rel="noopener">安心ほしょう注文書</a>
+                    <a class="in-app" href="./order/repair/index.html?form=loss">📱 アプリで入力して作成（紛失保証注文書）</a>
                     <a href="${BASE}/uploads/20241015_funshitsuhoshou_order.pdf" target="_blank" rel="noopener">補聴器紛失保証専用注文書</a>`
             }
         },

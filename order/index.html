@@ -187,7 +187,7 @@ function route(){const h=location.hash.slice(1);let m;
  $('v1').hidden=$('v2').hidden=$('v3').hidden=true;$('back').hidden=!h;document.documentElement.style.setProperty('--g','#0a8f48');
  if(m=h.match(/^form-(\w+)$/)){const f=FORMS.find(x=>x.id===m[1]);if(f){openForm(f);return}}
  if(m=h.match(/^brand-(\w+)$/)){const n=Object.keys(BR).find(k=>k.toLowerCase()===m[1]);if(n){const c=BR[n];document.documentElement.style.setProperty('--g',c[2]);$('ttl').textContent=n+'（'+c[1]+'）';
-  $('list').innerHTML=FORMS.filter(f=>f.brand===n).map(f=>`<button class="item" data-f="${f.id}" style="border-left-color:${c[2]}"><span><b>${f.name}</b><small>${f.sub}</small></span><em>様式 ${f.ed}</em></button>`).join('');$('v2').hidden=false;return}}
+  $('list').innerHTML=FORMS.filter(f=>f.brand===n).map(f=>`<button class="item" data-f="${f.id}" style="border-left-color:${c[2]}"><span><b>${f.name}</b><small>${f.sub}</small></span><em>様式 ${f.ed}</em></button>`).join('')+`<a class="item" href="./202604_ordersheet.xlsx" style="border-left-color:#2e7d32;text-decoration:none"><span><b>オーダーシート</b><small>Excelファイル（Beltone・Unitron共通）</small></span><em>Excel</em></a>`;$('v2').hidden=false;return}}
  $('ttl').textContent='NJH 補聴器 ご注文書 作成';$('v1').hidden=false}
 addEventListener('hashchange',route);
 /* ---------- form UI ---------- */

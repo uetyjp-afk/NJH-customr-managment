@@ -90,6 +90,7 @@ input:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(--ac) 35%,tra
 <button class="sub" id="print" type="button">印刷</button>
 <button class="sub" id="toParts" type="button">🔩 備品も注文</button>
 <button class="sub" id="dbSave" type="button">🗄 データベースに保存</button>
+<button class="sub" id="toCust" type="button" style="background:#2e7d32;color:#fff">💾 保存して顧客管理へ移動</button>
     </div>
 <button class="go" id="both" type="button" disabled style="background:#2b6cb0;margin-top:8px">補聴器と備品の注文を送る（PDFまとめて）</button>
 <p class="hint" id="bothHint" style="margin:6px 0 0"></p>
@@ -682,6 +683,27 @@ m.textContent="データベースに保存しました："+(cust.name||"")+" 様
 dbInfoUpdate();
 };
 
+$("toCust").onclick=()=>{
+const m=$("msg");
+const chk=validateOrder();
+if(!chk.ok){m.textContent=chk.message;return}
+const db=loadDb();
+const f=findCust(db);
+if(!f.cust){
+if(!confirm("顧客管理に紐付いていないため、注文内容は顧客管理に保存されません。\n入力中の内容だけ保存して、顧客管理へ移動しますか？"))return;
+try{localStorage.setItem("njh_custom_v",JSON.stringify(V))}catch(e){}
+location.href="../../customer.html";return;
+}
+const cust=f.cust;
+if(!Array.isArray(cust.orders))cust.orders=[];
+const rec={id:OID||Date.now(),date:(V.odY||"")+"/"+(V.odM||"")+"/"+(V.odD||""),formId:cur.id,mid:MID[cur.id]||cur.id,formName:cur.name,cust:V.cust||cust.name||"",summary:orderSummary(),total:V.total||"",data:JSON.parse(JSON.stringify(V)),savedAt:Date.now()};
+const ix=cust.orders.findIndex(x=>x.id===rec.id);
+if(ix>=0)cust.orders[ix]=rec;else cust.orders.push(rec);
+try{localStorage.setItem("njhc",JSON.stringify(db))}catch(e){m.textContent="保存できませんでした（端末の容量不足の可能性があります）";return}
+OID=rec.id;CID=cust.id;DB_CUST=cust;
+try{localStorage.setItem("njh_open_cust",JSON.stringify({id:cust.id,tab:"o"}))}catch(e){}
+location.href="../../customer.html";
+};
 $("go").onclick=async()=>{
   const m=$("msg");
   const check=validateOrder();

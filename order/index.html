@@ -73,7 +73,7 @@ header h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .pv canvas{width:100%!important}
 }
 </style></head><body>
-<header><button class="back" id="back" hidden>‹ 戻る</button><h1 id="ttl">NJH 補聴器 ご注文書 作成</h1><nav class="hnav"><button type="button" id="topNew" style="border:0;color:#fff;background:#7c3aed;border-radius:14px;padding:6px 9px;font-size:12px;white-space:nowrap">＋ 新規注文</button><a href="../index.html" style="background:#ff7a00;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap">🏠 ホームに戻る</a><a href="../index.html#cart" id="navParts">🔩 パーツ注文</a><a href="../index.html#repair">🔧 修理可否</a></nav></header>
+<header><button class="back" id="back" hidden>‹ 戻る</button><h1 id="ttl">NJH 補聴器 ご注文書 作成</h1><nav class="hnav"><button type="button" id="topNew" style="border:0;color:#fff;background:#7c3aed;border-radius:14px;padding:6px 9px;font-size:12px;white-space:nowrap">＋ 新規注文</button><a href="../index.html" style="background:#ff7a00;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap">🏠 ホームに戻る</a><a href="../customer.html" onclick="try{var c=new URLSearchParams(location.search).get('cid');if(c)localStorage.setItem('njh_open_cust',JSON.stringify({id:c,tab:'o'}))}catch(e){}" style="background:#2e7d32;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap;margin-left:8px">💾 顧客管理へ移動</a><a href="../index.html#cart" id="navParts">🔩 パーツ注文</a><a href="../index.html#repair">🔧 修理可否</a></nav></header>
 <main>
 <section id="v1"><p class="note" style="text-align:center;margin-top:20px">メーカーを選んでください</p><div class="tiles" id="tiles"></div></section>
 <section id="v2" hidden><div class="list" id="list"></div></section>
@@ -99,7 +99,7 @@ header h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 <label class="f">縦 <span id="dyv">0</span></label><input type="range" id="dy" min="-8" max="8" step="0.5" value="0"></details></fieldset>
 </div>
 <div class="pv">
-<div class="bar"><button class="btn" id="bPrint">印刷 / FAX</button><button class="btn" id="bMail">メールで送る</button><button class="btn" id="bSharePdf" style="background:#06c755">PDFを送る（LINEなど）</button><button class="btn s" id="bPdf">PDF保存</button><button class="btn s" id="bPng">画像保存</button><button class="btn s" id="bClr">入力をクリア</button><button class="btn" id="bNew" style="background:#7c3aed">新規で注文</button><button class="btn" id="bBoth" disabled style="background:#2b6cb0;width:100%;margin-top:8px">補聴器と備品の注文を送る（PDFまとめて）</button><p id="bothHint" style="width:100%;margin:6px 0 0;font-size:12px;color:#b45309;line-height:1.5"></p></div>
+<div class="bar"><button class="btn" id="bPrint">印刷 / FAX</button><button class="btn" id="bMail">メールで送る</button><button class="btn" id="bSharePdf" style="background:#06c755">PDFを送る（LINEなど）</button><button class="btn s" id="bPdf">PDF保存</button><button class="btn s" id="bPng">画像保存</button><button class="btn s" id="bClr">入力をクリア</button><button class="btn s" id="bDb" style="background:#1d4e89;color:#fff">🗄 データベースに保存</button><button class="btn" id="bNew" style="background:#7c3aed">新規で注文</button><button class="btn" id="bBoth" disabled style="background:#2b6cb0;width:100%;margin-top:8px">補聴器と備品の注文を送る（PDFまとめて）</button><p id="bothHint" style="width:100%;margin:6px 0 0;font-size:12px;color:#b45309;line-height:1.5"></p></div>
 <div id="warns"></div>
 <canvas id="cv" aria-label="ご注文書プレビュー"></canvas>
 <p class="note">FAX：印刷画面でFAX対応のプリンタ／複合機を選択。<br>
@@ -659,6 +659,21 @@ function startNewOrder(){
 }
 $('bNew').onclick=startNewOrder;
 $('topNew').onclick=startNewOrder;
+$('bDb').onclick=()=>{const qp=new URLSearchParams(location.search);const cid=qp.get('cid');
+if(!cid){alert('顧客管理の顧客画面から開いた注文書だけ、履歴に保存できます。');return}
+saveHaDraft();const dr=loadHaDraft(FM.id);if(!dr){alert('保存する内容がありません。');return}
+let db=null;try{db=JSON.parse(localStorage.getItem('njhc')||'null')}catch(e){}
+const cu=db&&db.cs.find(x=>String(x.id)===String(cid));if(!cu){alert('顧客管理に該当の顧客が見つかりませんでした。');return}
+cu.orders=cu.orders||[];
+const oid=qp.get('oid');
+const rec={id:oid?+oid:Date.now(),app:'main',date:((dr.fields&&dr.fields.orderDate)||'').replace(/-/g,'/'),formId:FM.id,formName:FM.name,cust:(dr.fields&&dr.fields.name)||cu.name||'',summary:((dr.fields&&dr.fields.name)||'')+' 様',data:dr,savedAt:Date.now()};
+const ix=cu.orders.findIndex(x=>String(x.id)===String(rec.id));if(ix>=0)cu.orders[ix]=rec;else cu.orders.push(rec);
+try{localStorage.setItem('njhc',JSON.stringify(db))}catch(e){alert('保存できませんでした（端末の容量不足の可能性があります）');return}
+if(!oid){qp.set('oid',rec.id);history.replaceState(null,'',location.pathname+'?'+qp.toString()+location.hash)}
+alert('保存しました：'+(cu.name||'')+' 様の注文履歴に登録しました。')};
+try{const qp=new URLSearchParams(location.search);const op=qp.get('open'),oid=qp.get('oid'),cid=qp.get('cid');
+if(op){if(oid&&cid){try{const db=JSON.parse(localStorage.getItem('njhc')||'null');const cu=db&&db.cs.find(x=>String(x.id)===String(cid));const rec=cu&&(cu.orders||[]).find(x=>String(x.id)===String(oid));if(rec&&rec.data){let m={};try{m=JSON.parse(ls.get('njh_ha_drafts_v1')||'{}')||{}}catch(e){}m[rec.formId]=rec.data;ls.set('njh_ha_drafts_v1',JSON.stringify(m));ls.set('njh_ha_draft_v1',JSON.stringify(rec.data));if(PRE)PRE.done[rec.formId]=1}}catch(e){}}
+const f=FORMS.find(x=>x.id===op);if(f)openForm(f)}}catch(e){}
 $('bClr').onclick=()=>{if(!confirm('お客様情報と選択内容をクリアします（貴店情報は残ります）'))return;ST={};['kana','name','age','note','wishDate'].forEach(k=>$(k).value='');document.querySelectorAll('#gender input').forEach(i=>{i.checked=false;i.dataset.on=''});try{ls.set('njh_ha_draft_v1','');const m=JSON.parse(ls.get('njh_ha_drafts_v1')||'{}')||{};if(FM)delete m[FM.id];ls.set('njh_ha_drafts_v1',JSON.stringify(m))}catch(e){};idbDel('ha_pdf').catch(()=>{});refresh();upd()};
 addEventListener('pageshow',()=>{bothState();syncShop()});addEventListener('focus',()=>{bothState();syncShop()});addEventListener('storage',()=>{bothState();syncShop()});document.addEventListener('visibilitychange',()=>{if(!document.hidden){bothState();syncShop()}});
 window.__d={FORMS,get ST(){return ST},set ST(v){ST=v},upd,refresh,cv};

@@ -1,6 +1,6 @@
 NJH 補聴器 ご注文書 作成アプリ
 
-■ 収録様式（全18種類）
+■ 収録様式（全20種類）
 Unitron：
 ・Moxi S-R
 ・Moxi Vivante R / 312 / RS
@@ -16,12 +16,17 @@ Beltone：
 ・Commence 62 / 64DW
 ・Serene 62S / 63DW
 ・Serene 76 / 86 DW
+・Serene クロス送信機 ★追加
 ・Rely RIC
 ・Rely BTE
 ・Boost Max S
 ・Boost Ultra
 ・充電式オーダーメイド（カナルDWC / カスタムDWC） ★追加
 ・RIC用モールド ★追加
+
+その他：
+・NJH安心ほしょう（保証プラン注文書） ★追加
+・イヤモールド注文書（Excelファイル）
 
 ※オーダーメイド・モールドの入力方式は原本PDFのレイアウトに合わせたチェック・記入方式です。商品コード自動記載は行いません。
 チェック位置は近似のため、実運用前に原本との照合・微調整を推奨します。

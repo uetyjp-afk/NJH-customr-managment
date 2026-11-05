@@ -1160,7 +1160,7 @@ img,canvas,table{max-width:100%}
                     <a class="in-app" href="./order/index.html#form-uni_mold">RIC用モールド</a>`
             },
             "q2": {
-                text: "Beltone 注文書を作成（11様式）",
+                text: "Beltone 注文書を作成（12様式）",
                 answer: `<div class="note">機種を選ぶと入力画面が開きます（PDF保存・印刷/FAX・メール・LINE共有）</div>
                     <a class="in-app" href="./order/index.html#form-beltone_custom">充電式オーダーメイド</a>
                     <a class="in-app" href="./order/index.html#form-env6264">Envision 62S / 64DW</a>
@@ -1168,6 +1168,7 @@ img,canvas,table{max-width:100%}
                     <a class="in-app" href="./order/index.html#form-commence">Commence 62 / 64DW</a>
                     <a class="in-app" href="./order/index.html#form-serene6263">Serene 62S / 63DW</a>
                     <a class="in-app" href="./order/index.html#form-serene7686">Serene 76 / 86 DW</a>
+                    <a class="in-app" href="./order/index.html#form-serene_cros">Serene クロス送信機</a>
                     <a class="in-app" href="./order/index.html#form-rely_ric">Rely RIC</a>
                     <a class="in-app" href="./order/index.html#form-rely_bte">Rely BTE</a>
                     <a class="in-app" href="./order/index.html#form-boost_max">Boost Max S</a>
@@ -1176,7 +1177,13 @@ img,canvas,table{max-width:100%}
             },
             "q3": {
                 text: "全様式の一覧から選ぶ",
-                answer: `<a class="in-app" href="./order/index.html">注文書作成アプリを開く（Beltone / Unitron）</a>`
+                answer: `<a class="in-app" href="./order/index.html">注文書作成アプリを開く（Beltone / Unitron / その他）</a>`
+            },
+            "q4": {
+                text: "その他の注文書を作成（安心ほしょう・イヤモールド）",
+                answer: `<div class="note">自動入力の対象でない器種や、保証プラン・イヤモールドの注文に使います</div>
+                    <a class="in-app" href="./order/index.html#form-hosho">NJH安心ほしょう（保証プラン注文書）</a>
+                    <a class="in-app" href="./order/202610_earmold_ordersheet.xlsx">イヤモールド注文書 (Excel)</a>`
             }
         },
         "order_custom": {
@@ -2958,6 +2965,20 @@ function cFname() {
                 .catch((err) => console.log('Service Worker registration failed:', err));
         });
     }
+</script>
+
+<script>
+// NJHサイトの資料リンク（/uploads/）が切れている場合は、販売店向け資料ページに自動で切り替える
+(function(){
+  var FALLBACK='https://www.njha.co.jp/dealers/';
+  function guard(a){
+    if(a.dataset.guarded)return;a.dataset.guarded='1';
+    fetch(a.href,{method:'GET',cache:'no-store'}).then(function(r){if(!r.ok)a.href=FALLBACK}).catch(function(){});
+  }
+  function scan(root){(root||document).querySelectorAll('a[href*="njha.co.jp/uploads/"]').forEach(guard)}
+  if(document.readyState!=='loading')scan();else document.addEventListener('DOMContentLoaded',function(){scan()});
+  new MutationObserver(function(ms){ms.forEach(function(m){m.addedNodes.forEach(function(n){if(n.querySelectorAll)scan(n)})})}).observe(document.documentElement,{childList:true,subtree:true});
+})();
 </script>
 
 </body>

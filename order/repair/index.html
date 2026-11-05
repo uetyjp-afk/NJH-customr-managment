@@ -88,6 +88,8 @@ try{const D=JSON.parse(localStorage.getItem('njhc')||'null');
   if(CID){CUST=(D.cs||[]).find(x=>String(x.id)===String(CID))||null;
    if(CUST){HAS=(CUST.ha||[]).filter(h=>h&&(h.buy||(h.R&&h.R.model)||(h.L&&h.L.model)));if(!V.common.cust)V.common.cust=CUST.name||''}}}}catch(e){}
 if(V.haSel<0||V.haSel>=HAS.length)V.haSel=HAS.length-1;
+function addY2(d,y){if(!d||!y)return'';const t=new Date(d+'T00:00:00');if(isNaN(t))return'';t.setFullYear(t.getFullYear()+ +y);return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')}
+function flatP2(h){const lim=addY2(h.buy,5);return lim&&today()<=lim?'26,000円（購入から5年以内）':'52,000円（購入から5年を経過）'}
 function deriveSerial(){const c=V.common;if(V.ear==='R')return c.noR||'';if(V.ear==='L')return c.noL||'';return[c.noR&&'右 '+c.noR,c.noL&&'左 '+c.noL].filter(Boolean).join('　')}
 function applyHa(){const rec=HAS[V.haSel];if(!rec)return;const c=V.common;c.buy=rec.buy||'';const rm=rec.R&&rec.R.model||'',lm=rec.L&&rec.L.model||'';
  c.model=V.ear==='R'&&rm?rm:V.ear==='L'&&lm?lm:(rm&&lm&&rm!==lm?rm+' / '+lm:rm||lm);
@@ -101,7 +103,7 @@ function haSection(){if(!HAS.length)return `<div class="card"><h2>補聴器の�
  return `<div class="card"><h2>どの補聴器ですか？（選ぶと自動入力）</h2>
  <label>購入記録</label><div class="chips">${HAS.map((h,i)=>`<button type="button" class="chip${i===V.haSel?' on':''}" data-ha="${i}">${esc(h.buy||'購入日不明')}：${esc((h.R&&h.R.model)||(h.L&&h.L.model)||'')}</button>`).join('')}</div>
  <label>対象</label><div class="chips">${[['R','右耳'],['L','左耳'],['B','両耳']].map(([id,t])=>`<button type="button" class="chip${V.ear===id?' on':''}" data-ear="${id}">${t}</button>`).join('')}</div>
- <p class="note">選択中の補聴器：${esc(rec?(rec.buy||'')+'　右：'+((rec.R&&rec.R.model)||'')+'（'+((rec.R&&rec.R.no)||'')+'）　左：'+((rec.L&&rec.L.model)||'')+'（'+((rec.L&&rec.L.no)||'')+'）':'')}</p></div>`}
+ <p class="note">選択中の補聴器：${esc(rec?(rec.buy||'')+'　右：'+((rec.R&&rec.R.model)||'')+'（'+((rec.R&&rec.R.no)||'')+'）　左：'+((rec.L&&rec.L.model)||'')+'（'+((rec.L&&rec.L.no)||'')+'）':'')}</p>${rec&&rec.buy?'<p class="note">一律修理の目安：'+flatP2(rec)+'</p>':''}</div>`}
 function commonSection(){const c='common';return `<div class="card"><h2>お店・お客様情報（自動入力）</h2><div class="g2">
  ${inp(c+'.shop','貴店名')}${inp(c+'.staff','ご担当者')}
  ${inp(c+'.tel','電話番号')}${inp(c+'.fax','FAX番号')}

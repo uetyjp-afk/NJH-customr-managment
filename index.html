@@ -1069,7 +1069,7 @@ img,canvas,table{max-width:100%}
     <div class="footer-note">
         リンク先：<a href="https://www.njha.co.jp/dealers/" target="_blank" rel="noopener">NJH 販売店向け資料ページ</a>
     </div>
-    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v66</div>
+    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v67</div>
 </div>
 
 <!-- パーツ注文リスト -->
@@ -1774,6 +1774,18 @@ img,canvas,table{max-width:100%}
         });
         Object.values(groups).forEach(g => g.sort((a, b) => b.score - a.score));
 
+        // 「：」より前が同じ名前のバリエーション（片耳／両耳など）は、離れないようひとまとまりにする
+        const vKey = p => { const ix = p.name.indexOf('：'); return ix > 0 ? p.name.slice(0, ix) : p.name; };
+        const units = {};
+        Object.keys(groups).forEach(b => {
+            const us = [];
+            groups[b].forEach(p => {
+                const last = us[us.length - 1];
+                if (last && vKey(last[0]) === vKey(p)) last.push(p); else us.push([p]);
+            });
+            units[b] = us;
+        });
+
         // 最高スコアが高いブランド順に、ラウンドロビンで均等に取り出す
         const brandOrder = Object.keys(groups).sort((a, b) => groups[b][0].score - groups[a][0].score);
         const result = [];
@@ -1782,12 +1794,12 @@ img,canvas,table{max-width:100%}
         while (result.length < limit) {
             let addedAny = false;
             for (const b of brandOrder) {
-                for (let n = 0; n < 2 && cursors[b] < groups[b].length && result.length < limit; n++) {
-                    result.push(groups[b][cursors[b]]);
+                if (cursors[b] < units[b].length) {
+                    units[b][cursors[b]].forEach(p => result.push(p));
                     cursors[b]++;
                     addedAny = true;
+                    if (result.length >= limit) break;
                 }
-                if (result.length >= limit) break;
             }
             if (!addedAny) break;
         }
@@ -1812,13 +1824,13 @@ img,canvas,table{max-width:100%}
             card.className = `part-card part-card-${meta.key}`;
             let optsHtml = '';
             if (p.options) {
-                if (p.options.metal) {
-                    optsHtml += `<div class="opt-row"><label>金具の色</label><select class="opt-metal" data-for="${p.id}">
-                        <option value="">（選択）</option>${p.options.metal.map(v=>`<option value="${v}">${v}</option>`).join('')}</select></div>`;
-                }
                 if (p.options.cord) {
                     optsHtml += `<div class="opt-row"><label>ひもの色</label><select class="opt-cord" data-for="${p.id}">
                         <option value="">（選択）</option>${p.options.cord.map(v=>`<option value="${v}">${v}</option>`).join('')}</select></div>`;
+                }
+                if (p.options.metal) {
+                    optsHtml += `<div class="opt-row"><label>金具の色</label><select class="opt-metal" data-for="${p.id}">
+                        <option value="">（選択）</option>${p.options.metal.map(v=>`<option value="${v}">${v}</option>`).join('')}</select></div>`;
                 }
             }
             card.innerHTML = `

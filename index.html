@@ -562,6 +562,12 @@
         .quick-card small { font-size: 0.78rem; opacity: 0.92; line-height: 1.4; }
         .quick-order { background: linear-gradient(135deg, #0a8f48, #2b8a6e); }
         .quick-parts { background: linear-gradient(135deg, #2b6cb0, #1a365d); }
+        .dash { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0 0 26px; }
+        @media (min-width: 1025px) { .dash { grid-template-columns: repeat(3, 1fr); } }
+        .dash .quick-card { min-height: 104px; width: 100%; }
+        .quick-follow { background: linear-gradient(135deg, #6b46c1, #553c9a); }
+        .quick-dealer { background: linear-gradient(135deg, #4a5568, #2d3748); }
+        .dash-badge { display: none; background: #fff; color: #b03a1b; border-radius: 999px; padding: 1px 9px; font-weight: 700; font-size: 0.78rem; margin-left: 4px; white-space: nowrap; }
         @media (max-width: 480px) { .quick-row { grid-template-columns: 1fr; } }
         #answerText a.in-app::after { content: "›"; font-size: 1.1em; opacity: 0.8; }
         #answerText a.in-app { border-color: #9ae6b4; }
@@ -936,8 +942,8 @@ img,canvas,table{max-width:100%}
     <h1>NJHシステム</h1>
     <div class="subtitle">Beltone / Unitron 書類・マニュアル検索（NJH連携）</div>
 
-    <div style="margin-bottom:10px"><a class="quick-card" href="./customer.html" style="background:linear-gradient(135deg,#1a365d,#2b6cb0)"><span class="q-ico">📋</span><b>顧客管理</b><small>顧客・聴力・補聴器記録 → 注文書へ自動入力</small></a></div>
-    <div class="quick-row three">
+    <div class="dash">
+        <a class="quick-card" href="./customer.html" style="background:linear-gradient(135deg,#1a365d,#2b6cb0)"><span class="q-ico">📋</span><b>顧客管理 <span class="dash-badge" id="dashLoan"></span></b><small>検索・登録・履歴<br>顧客・聴力・補聴器記録 → 注文書へ自動入力</small></a>
         <a class="quick-card quick-order" href="./order/index.html" id="quickHaOrder">
             <span class="q-ico">✍️</span>
             <b>補聴器の注文書を作成</b>
@@ -953,6 +959,16 @@ img,canvas,table{max-width:100%}
             <b>修理可否チェック</b>
             <small>機種名を入れて修理不能か確認</small>
         </button>
+        <button type="button" class="quick-card quick-follow" id="quickFollow">
+            <span class="q-ico">📅</span>
+            <b>フォロー <span class="dash-badge" id="dashStale"></span></b>
+            <small>6ヶ月以上 来店のないお客様<br>来店記録から自動で表示</small>
+        </button>
+        <a class="quick-card quick-dealer" href="https://www.njha.co.jp/dealers/" target="_blank" rel="noopener">
+            <span class="q-ico">🌐</span>
+            <b>販売店ページ</b>
+            <small>最新の様式・お知らせ<br>NJH公式サイト</small>
+        </a>
     </div>
 
     <div class="step" id="step1">
@@ -1022,7 +1038,7 @@ img,canvas,table{max-width:100%}
     <div class="footer-note">
         リンク先：<a href="https://www.njha.co.jp/dealers/" target="_blank" rel="noopener">NJH 販売店向け資料ページ</a>
     </div>
-    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v58</div>
+    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v59</div>
 </div>
 
 <!-- パーツ注文リスト -->
@@ -2982,6 +2998,20 @@ function cFname() {
 })();
 </script>
 
+<script>
+(function(){
+function cnt(){try{var D=JSON.parse(localStorage.getItem('njhc')||'null');if(!D||!D.cs)return;
+var loans=0,stale=0;var now=new Date();var lim=new Date(now.getFullYear(),now.getMonth()-6,now.getDate());
+var limS=lim.getFullYear()+'-'+String(lim.getMonth()+1).padStart(2,'0')+'-'+String(lim.getDate()).padStart(2,'0');
+D.cs.forEach(function(c){(c.loans||[]).forEach(function(l){if(!l.done&&(l.date||l.model||l.no))loans++});
+var lv='';(c.visits||[]).forEach(function(v){if(v.date&&v.date>lv)lv=v.date});if(lv&&lv<=limS)stale++});
+var b1=document.getElementById('dashLoan');if(b1&&loans>0){b1.textContent='貸出中 '+loans+'件';b1.style.display='inline-block'}
+var b2=document.getElementById('dashStale');if(b2&&stale>0){b2.textContent='対象 '+stale+'名';b2.style.display='inline-block'}
+}catch(e){}}
+var f=document.getElementById('quickFollow');if(f)f.addEventListener('click',function(){try{localStorage.setItem('njhc_cust_filter','stale')}catch(e){}location.href='./customer.html'});
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',cnt);else cnt();
+})();
+</script>
 <script>window.addEventListener('pageshow',function(e){if(e.persisted)location.reload()});</script>
 </body>
 </html>

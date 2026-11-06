@@ -685,8 +685,9 @@ let db=null;try{db=JSON.parse(localStorage.getItem('njhc')||'null')}catch(e){}
 const cu=db&&db.cs.find(x=>String(x.id)===String(cid));if(!cu){alert('顧客管理に該当の顧客が見つかりませんでした。');return}
 cu.orders=cu.orders||[];
 const oid=qp.get('oid');
-const rec={id:oid?+oid:Date.now(),app:'main',date:((dr.fields&&dr.fields.orderDate)||'').replace(/-/g,'/'),formId:FM.id,formName:FM.name,cust:(dr.fields&&dr.fields.name)||cu.name||'',summary:((dr.fields&&dr.fields.name)||'')+' 様',data:dr,savedAt:Date.now()};
-const ix=cu.orders.findIndex(x=>String(x.id)===String(rec.id));if(ix>=0)cu.orders[ix]=rec;else cu.orders.push(rec);
+const mdl=(()=>{const pri=/器種|機種|シリーズ|グレード/;let sel='';FM.groups.forEach(g=>{if(sel||!pri.test(g.title||''))return;const v=g.t==='ear'?(ST[g.id+'R']||ST[g.id+'L']):(g.t==='multi'?(ST[g.id]||[])[0]:ST[g.id]);const it=v&&g.items.find(x=>x.k===v);if(it)sel=it.l||''});let ears='';FM.groups.forEach(g=>{if(g.t!=='ear')return;const r=!!ST[g.id+'R'],l=!!ST[g.id+'L'];if(r&&l)ears='B';else if(r)ears='R';else if(l)ears='L'});return{model:((FM.name||'')+(sel?' '+sel:'')).trim(),ears:ears||'B'}})();
+const rec={id:oid?+oid:Date.now(),app:'main',date:((dr.fields&&dr.fields.orderDate)||'').replace(/-/g,'/'),formId:FM.id,formName:FM.name,cust:(dr.fields&&dr.fields.name)||cu.name||'',summary:((dr.fields&&dr.fields.name)||'')+' 様',data:dr,model:mdl.model,ears:mdl.ears,savedAt:Date.now()};
+const ix=cu.orders.findIndex(x=>String(x.id)===String(rec.id));if(ix>=0){rec.st=cu.orders[ix].st||'注文中';if(cu.orders[ix].haIdx!=null)rec.haIdx=cu.orders[ix].haIdx}else{rec.st='注文中'}if(ix>=0)cu.orders[ix]=rec;else cu.orders.push(rec);
 try{localStorage.setItem('njhc',JSON.stringify(db))}catch(e){alert('保存できませんでした（端末の容量不足の可能性があります）');return}
 if(!oid){qp.set('oid',rec.id);history.replaceState(null,'',location.pathname+'?'+qp.toString()+location.hash)}
 alert('保存しました：'+(cu.name||'')+' 様の注文履歴に登録しました。')};

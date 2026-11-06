@@ -726,9 +726,9 @@ const f=findCust(db);
 if(!f.cust){m.textContent=f.how==="dup"?"同じ名前の顧客が複数います。顧客管理の顧客画面から注文書を開いて保存してください。":"顧客管理に該当の顧客が見つかりません。顧客管理に登録して、その顧客画面から注文書を開いてください。";return}
 const cust=f.cust;
 if(!Array.isArray(cust.orders))cust.orders=[];
-const rec={id:OID||Date.now(),date:(V.odY||"")+"/"+(V.odM||"")+"/"+(V.odD||""),formId:cur.id,mid:MID[cur.id]||cur.id,formName:cur.name,cust:V.cust||cust.name||"",summary:orderSummary(),total:V.total||"",data:JSON.parse(JSON.stringify(V)),savedAt:Date.now()};
+const rec={id:OID||Date.now(),date:(V.odY||"")+"/"+(V.odM||"")+"/"+(V.odD||""),formId:cur.id,mid:MID[cur.id]||cur.id,formName:cur.name,cust:V.cust||cust.name||"",summary:orderSummary(),model:((cur.name||"")+" "+orderSummary().split("／").filter(p=>p&&!/^合計/.test(p)&&!/^(両耳|右耳|左耳)$/.test(p)).join(" ")).trim(),ears:V.ears||"B",total:V.total||"",data:JSON.parse(JSON.stringify(V)),savedAt:Date.now()};
 const ix=cust.orders.findIndex(x=>x.id===rec.id);
-if(ix>=0)cust.orders[ix]=rec;else cust.orders.push(rec);
+if(ix>=0){rec.st=cust.orders[ix].st||"注文中";if(cust.orders[ix].haIdx!=null)rec.haIdx=cust.orders[ix].haIdx}else{rec.st="注文中"}if(ix>=0)cust.orders[ix]=rec;else cust.orders.push(rec);
 try{localStorage.setItem("njhc",JSON.stringify(db))}catch(e){m.textContent="保存できませんでした（端末の容量不足の可能性があります）";return}
 OID=rec.id;CID=cust.id;DB_CUST=cust;
 m.textContent="データベースに保存しました："+(cust.name||"")+" 様の注文履歴（"+rec.date+" "+rec.formName+"）";
@@ -748,9 +748,9 @@ location.href="../../customer.html";return;
 }
 const cust=f.cust;
 if(!Array.isArray(cust.orders))cust.orders=[];
-const rec={id:OID||Date.now(),date:(V.odY||"")+"/"+(V.odM||"")+"/"+(V.odD||""),formId:cur.id,mid:MID[cur.id]||cur.id,formName:cur.name,cust:V.cust||cust.name||"",summary:orderSummary(),total:V.total||"",data:JSON.parse(JSON.stringify(V)),savedAt:Date.now()};
+const rec={id:OID||Date.now(),date:(V.odY||"")+"/"+(V.odM||"")+"/"+(V.odD||""),formId:cur.id,mid:MID[cur.id]||cur.id,formName:cur.name,cust:V.cust||cust.name||"",summary:orderSummary(),model:((cur.name||"")+" "+orderSummary().split("／").filter(p=>p&&!/^合計/.test(p)&&!/^(両耳|右耳|左耳)$/.test(p)).join(" ")).trim(),ears:V.ears||"B",total:V.total||"",data:JSON.parse(JSON.stringify(V)),savedAt:Date.now()};
 const ix=cust.orders.findIndex(x=>x.id===rec.id);
-if(ix>=0)cust.orders[ix]=rec;else cust.orders.push(rec);
+if(ix>=0){rec.st=cust.orders[ix].st||"注文中";if(cust.orders[ix].haIdx!=null)rec.haIdx=cust.orders[ix].haIdx}else{rec.st="注文中"}if(ix>=0)cust.orders[ix]=rec;else cust.orders.push(rec);
 try{localStorage.setItem("njhc",JSON.stringify(db))}catch(e){m.textContent="保存できませんでした（端末の容量不足の可能性があります）";return}
 OID=rec.id;CID=cust.id;DB_CUST=cust;
 try{localStorage.setItem("njh_open_cust",JSON.stringify({id:cust.id,tab:"o"}))}catch(e){}

@@ -46,7 +46,7 @@ const today=()=>new Date().toISOString().slice(0,10),esc=s=>String(s??'').replac
 const newAu=()=>({date:today(),ac:{R:{},L:{}},bc:{R:{},L:{}},ucl:{R:{},L:{}}});
 const newEar=()=>({model:'',no:'',vol:'',rc:'',tube:'',ear:'',bat:'',extra:[]});
 const newHa=()=>({buy:'',wr:'',wrY:'',lg:'',lgY:'',lgN:'',lgExp:'',lgAmt:'',extra:[],R:newEar(),L:newEar()});
-const newC=()=>({id:Date.now(),no:String(D.seq++).padStart(4,'0'),kana:'',name:'',sex:'',birth:'',tel:'',addr:'',au:[newAu()],ha:[newHa()],sp:{date:'',w:{},s:{}},sps:[],cj:{},memo:'',extra:[],repairs:[],reqs:[]});const inWarrantyWindow=c=>c.ha.some(h=>{if(!h.wr)return false;const t=new Date(today()),d=new Date(h.wr+'T00:00:00'),e=new Date(t);e.setMonth(e.getMonth()+2);return d>=t&&d<=e});const monthMatch=(v,m)=>!m||String(v||'').slice(0,7)===m;
+const newC=()=>({id:Date.now(),no:String(D.seq++).padStart(4,'0'),kana:'',name:'',sex:'',birth:'',tel:'',zip:'',addr:'',au:[newAu()],ha:[newHa()],sp:{date:'',w:{},s:{}},sps:[],cj:{},memo:'',extra:[],repairs:[],reqs:[]});const inWarrantyWindow=c=>c.ha.some(h=>{if(!h.wr)return false;const t=new Date(today()),d=new Date(h.wr+'T00:00:00'),e=new Date(t);e.setMonth(e.getMonth()+2);return d>=t&&d<=e});const monthMatch=(v,m)=>!m||String(v||'').slice(0,7)===m;
 const cur=()=>D.cs.find(c=>c.id===V.id);
 function age(b){if(!b)return'';const d=new Date(b),n=new Date();let a=n.getFullYear()-d.getFullYear();if(n<new Date(n.getFullYear(),d.getMonth(),d.getDate()))a--;return a>=0&&a<131?a:''}
 function gp(o,p){return p.split('.').reduce((x,k)=>x==null?x:x[k],o)}
@@ -60,7 +60,7 @@ if(V.mode=='setup'){$('#ht').textContent='最初の設定';m.innerHTML=`<div cla
 <label>ご担当者（任意）</label><input id="s4" value="${esc(D.shop.staff)}"><label>店番（任意）</label><input id="s5" value="${esc(D.shop.sno)}">
 <p><button class="p" id="ss">保存して始める</button></p></div>`;
 $('#ss').onclick=()=>{const n=$('#s1').value.trim();if(!n)return alert('店名を入力してください');D.shop={name:n,tel:$('#s2').value.trim(),fax:$('#s3').value.trim(),staff:$('#s4').value.trim(),sno:$('#s5').value.trim()};sv();try{[['shop',D.shop.name],['contact',D.shop.staff],['tel',D.shop.tel],['fax',D.shop.fax]].forEach(a=>localStorage.setItem('njh_'+a[0],a[1]||''))}catch(e){}V.mode='list';render()};return}
-if(V.mode=='list'){$('#ht').innerHTML=`${esc(D.shop.name)}<small>顧客 ${D.cs.length}名</small>`;m.innerHTML=`<div class="g2" style="grid-template-columns:1fr auto"><input id="q" placeholder="名前・住所・電話・ふりがな・カルテNo検索" value="${esc(V.q)}"><button class="p" id="add">＋顧客追加</button></div>${bkInfoHtml()}<div class="filters"><select id="filter"><option value="all">すべての顧客</option><option value="warranty">保証終了2ヶ月前</option><option value="birth">誕生日（月）</option><option value="purchase">購入年月</option></select><input id="month" type="month" value="${esc(V.month)}"><select id="bmonth"><option value="">月を選択</option><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option></select></div><div id="ls" style="margin-top:10px"></div><p class="note" style="text-align:center;margin-top:16px">NJHシステム 顧客管理 v52</p>`;$('#filter').value=V.filter;const sync=()=>{$('#month').hidden=V.filter!=='purchase';$('#bmonth').hidden=V.filter!=='birth'};$('#bmonth').value=V.bmonth;sync();const L=()=>{const q=V.q.trim().toLowerCase(),m=V.month,ok=c=>{const t=[c.name,c.kana,c.no,c.addr,c.tel].join('').toLowerCase();return(!q||t.includes(q))&&(V.filter!=='warranty'||inWarrantyWindow(c))&&(V.filter!=='birth'||!V.bmonth||(c.birth&&+String(c.birth).slice(5,7)===+V.bmonth))&&(V.filter!=='purchase'||c.ha.some(h=>h.buy&&monthMatch(h.buy,m)))};$('#ls').innerHTML=D.cs.filter(ok).sort((a,b)=>b.no.localeCompare(a.no)).map(c=>`<div class="card li" data-id="${c.id}"><span class="no">${c.no}</span><div style="flex:1"><b>${esc(c.name)||'（未入力）'}</b><br><small>${esc(c.kana)} ${esc(c.addr)}</small></div>›</div>`).join('')||'<p>条件に一致する顧客がいません。</p>';$('#ls').querySelectorAll('.li').forEach(e=>e.onclick=()=>{V.id=+e.dataset.id;V.mode='edit';V.tab='b';render()})};L();$('#q').oninput=e=>{V.q=e.target.value;L()};$('#filter').onchange=e=>{V.filter=e.target.value;if(V.filter!=='purchase')V.month='';if(V.filter!=='birth')V.bmonth='';sync();L()};$('#month').onchange=e=>{V.month=e.target.value;L()};$('#bmonth').onchange=e=>{V.bmonth=e.target.value;L()};$('#add').onclick=()=>{const n=newC();D.cs.push(n);sv();V.id=n.id;V.mode='edit';V.tab='b';render()};return}
+if(V.mode=='list'){$('#ht').innerHTML=`${esc(D.shop.name)}<small>顧客 ${D.cs.length}名</small>`;m.innerHTML=`<div class="g2" style="grid-template-columns:1fr auto"><input id="q" placeholder="名前・住所・電話・ふりがな・カルテNo検索" value="${esc(V.q)}"><button class="p" id="add">＋顧客追加</button></div>${bkInfoHtml()}<div class="filters"><select id="filter"><option value="all">すべての顧客</option><option value="warranty">保証終了2ヶ月前</option><option value="birth">誕生日（月）</option><option value="purchase">購入年月</option></select><input id="month" type="month" value="${esc(V.month)}"><select id="bmonth"><option value="">月を選択</option><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option></select></div><div id="ls" style="margin-top:10px"></div><p class="note" style="text-align:center;margin-top:16px">NJHシステム 顧客管理 v53</p>`;$('#filter').value=V.filter;const sync=()=>{$('#month').hidden=V.filter!=='purchase';$('#bmonth').hidden=V.filter!=='birth'};$('#bmonth').value=V.bmonth;sync();const L=()=>{const q=V.q.trim().toLowerCase(),m=V.month,ok=c=>{const t=[c.name,c.kana,c.no,c.addr,c.tel,c.zip].join('').toLowerCase();return(!q||t.includes(q))&&(V.filter!=='warranty'||inWarrantyWindow(c))&&(V.filter!=='birth'||!V.bmonth||(c.birth&&+String(c.birth).slice(5,7)===+V.bmonth))&&(V.filter!=='purchase'||c.ha.some(h=>h.buy&&monthMatch(h.buy,m)))};$('#ls').innerHTML=D.cs.filter(ok).sort((a,b)=>b.no.localeCompare(a.no)).map(c=>`<div class="card li" data-id="${c.id}"><span class="no">${c.no}</span><div style="flex:1"><b>${esc(c.name)||'（未入力）'}</b><br><small>${esc(c.kana)} ${esc(c.addr)}</small></div>›</div>`).join('')||'<p>条件に一致する顧客がいません。</p>';$('#ls').querySelectorAll('.li').forEach(e=>e.onclick=()=>{V.id=+e.dataset.id;V.mode='edit';V.tab='b';render()})};L();$('#q').oninput=e=>{V.q=e.target.value;L()};$('#filter').onchange=e=>{V.filter=e.target.value;if(V.filter!=='purchase')V.month='';if(V.filter!=='birth')V.bmonth='';sync();L()};$('#month').onchange=e=>{V.month=e.target.value;L()};$('#bmonth').onchange=e=>{V.bmonth=e.target.value;L()};$('#add').onclick=()=>{const n=newC();D.cs.push(n);sv();V.id=n.id;V.mode='edit';V.tab='b';render()};return}
 $('#ht').innerHTML=`No.${c.no} ${esc(c.name)||'新規顧客'}<small id="ag"></small>`;
 const T=[['b','基本'],['a','聴力'],['h','補聴器'],['s','語音'],['n','相談'],['r','修理'],['o','注文']];
 m.innerHTML=`<div class="tabs">${T.map(t=>`<button class="${V.tab==t[0]?'on':''}" data-t="${t[0]}">${t[1]}</button>`).join('')}</div><div id="tc"></div>`;
@@ -68,8 +68,9 @@ m.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{V.tab=b.dataset.t;rende
 function tab(c){const x=$('#tc');let h='';
 if(V.tab=='b')h=`<div class="card"><label>カルテNo.（自動）</label><input value="${c.no}" readonly><label>ふりがな</label>${inp('kana')}<label>お名前</label>${inp('name')}
 <div class="g2"><div><label>性別</label><select data-p="sex"><option value="">—</option><option value="0">男</option><option value="1">女</option></select></div><div><label>生年月日</label>${inp('birth','date')}</div></div>
-<label>年齢（自動）</label><div class="pct" id="ag2"></div><label>電話</label>${inp('tel','tel')}<label>住所</label>${inp('addr')}</div><button onclick="del()" style="color:#a3260f">この顧客を削除</button>`;
-if(V.tab=='b'){const dn=(c.name||'').trim();
+<label>年齢（自動）</label><div class="pct" id="ag2"></div><label>電話</label>${inp('tel','tel')}<label>郵便番号</label><div style="display:flex;gap:6px"><input type="text" data-p="zip" inputmode="numeric" placeholder="例：739-1731" style="flex:1"><button type="button" class="p" onclick="zipSearch()">住所を検索</button></div><div id="zipCand"></div><label>住所</label>${inp('addr')}</div><button onclick="del()" style="color:#a3260f">この顧客を削除</button>`;
+if(V.tab=='b'){const zi=document.querySelector('[data-p="zip"]');if(zi)zi.addEventListener('input',()=>{const z=zi.value.replace(/[^0-9]/g,'');if(z.length===7&&z!==lastZip)zipSearch()});
+const dn=(c.name||'').trim();
 if(dn&&c.birth){const dup=D.cs.find(x=>x.id!==c.id&&(x.name||'').trim()===dn&&x.birth===c.birth);
 if(dup)h='<div class="card" style="border:2px solid #d97706;background:#fff7e6"><b>⚠ 同じ氏名・生年月日の顧客がすでに登録されています</b><br>'+esc(dup.name)+' 様（No.'+esc(dup.no)+'）です。二重登録でないか確認してください。</div>'+h}
 const exHtml='<div class="card"><b>自由項目</b>'+(c.extra||[]).map((x,j)=>'<div class="g2" style="margin:6px 0"><input type="text" data-p="extra.'+j+'.k" placeholder="項目名"><div style="display:flex;gap:6px"><input type="text" data-p="extra.'+j+'.v" placeholder="内容"><button type="button" onclick="delBExtra('+j+')">×</button></div></div>').join('')+'<button class="p" type="button" onclick="addBExtra()">＋項目を追加</button><p class="note">基本情報に残したい項目を自由に追加できます（例：紹介者、家族構成、来店きっかけなど）。</p></div>';
@@ -110,6 +111,29 @@ ser('ac','R','#d01818','○',1);ser('ac','L','#1747c8','×',1);ser('bc','R','#d0
 function addAu(){cur().au.push(newAu());sv();render()}function addHa(){cur().ha.push(newHa());sv();render()}function addRepair(){cur().repairs.push({date:today(),content:'',amount:''});sv();render()}function delRepair(i){cur().repairs.splice(i,1);sv();render()}
 function addSp(){const c=cur();c.sps=c.sps||[];c.sps.push({date:today(),w:{},s:{}});sv();render()}function delSp(j){if(!confirm('この再測定を削除しますか？'))return;cur().sps.splice(j,1);sv();render()}
 function addConsult(){const c=cur();c.consults=c.consults||[];c.consults.push({date:today(),content:'',adj:''});sv();render()}function delConsult(j){if(!confirm('この相談を削除しますか？'))return;cur().consults.splice(j,1);sv();render()}
+let lastZip='';
+async function zipSearch(){
+const zin=document.querySelector('[data-p="zip"]');if(!zin)return;
+const box=document.getElementById('zipCand');
+const z=(zin.value||'').replace(/[^0-9]/g,'');
+if(z.length!==7){if(box)box.innerHTML='<p class="note" style="color:#a3260f">郵便番号は7桁で入力してください。</p>';return}
+lastZip=z;
+if(box)box.innerHTML='<p class="note">住所を検索中…</p>';
+try{
+const ctl=new AbortController();const tm=setTimeout(()=>ctl.abort(),8000);
+const r=await fetch('https://zipcloud.ibsnet.co.jp/api/search?zipcode='+z,{signal:ctl.signal});clearTimeout(tm);
+const j=await r.json();
+if(!j.results||!j.results.length){if(box)box.innerHTML='<p class="note" style="color:#a3260f">その郵便番号の住所が見つかりませんでした。</p>';return}
+const cands=[...new Set(j.results.map(x=>x.address1+x.address2+x.address3))];
+const ain=document.querySelector('[data-p="addr"]');
+const apply=v=>{const c=cur();if(c)sp(c,'addr',v);if(ain){ain.value=v;ain.focus();try{ain.setSelectionRange(v.length,v.length)}catch(_){}}sv();if(box)box.innerHTML=''};
+const wasEmpty=ain&&!ain.value.trim();
+if(wasEmpty)apply(cands[0]);
+if(box&&(cands.length>1||(!wasEmpty&&ain&&cands[0]!==ain.value.trim()))){
+box.innerHTML='<p class="note">候補（タップで住所に入力）</p>'+cands.map((v,i)=>'<button type="button" class="zc" data-i="'+i+'" style="display:block;width:100%;text-align:left;margin:4px 0;padding:10px;border:1px solid #bfd0dd;border-radius:8px;background:#f2f7fa">'+esc(v)+'</button>').join('');
+box.querySelectorAll('.zc').forEach(b=>b.onclick=()=>apply(cands[+b.dataset.i]))}
+}catch(e){if(box)box.innerHTML='<p class="note" style="color:#a3260f">住所を検索できませんでした（ネット接続をご確認ください）。住所はそのまま手入力できます。</p>'}
+}
 function addBExtra(){const c=cur();c.extra=c.extra||[];c.extra.push({k:'',v:''});sv();render()}
 function delBExtra(j){cur().extra.splice(j,1);sv();render()}
 function addExtra(i,e){const r=cur().ha[i][e];r.extra=r.extra||[];r.extra.push({k:'',v:''});sv();render()}function delExtra(i,e,j){cur().ha[i][e].extra.splice(j,1);sv();render()}
@@ -153,7 +177,7 @@ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmln
 function xlsxBlob(D){const sex=v=>v==='0'?'男':v==='1'?'女':'';
 const sheets=[
 ['店舗情報',[['項目','内容'],['店名',D.shop.name||''],['担当者',D.shop.staff||''],['電話番号',D.shop.tel||''],['FAX番号',D.shop.fax||''],['店番',D.shop.sno||''],['顧客数',D.cs.length],['出力日',today()]]],
-['顧客一覧',[['カルテNo','氏名','ふりがな','性別','生年月日','電話番号','住所','メモ','自由項目'],...D.cs.map(c=>[c.no||'',c.name||'',c.kana||'',sex(c.sex),c.birth||'',c.tel||'',c.addr||'',c.memo||'',(c.extra||[]).filter(x=>x.k||x.v).map(x=>x.k+'：'+x.v).join(' / ')])]],
+['顧客一覧',[['カルテNo','氏名','ふりがな','性別','生年月日','電話番号','郵便番号','住所','メモ','自由項目'],...D.cs.map(c=>[c.no||'',c.name||'',c.kana||'',sex(c.sex),c.birth||'',c.tel||'',c.zip||'',c.addr||'',c.memo||'',(c.extra||[]).filter(x=>x.k||x.v).map(x=>x.k+'：'+x.v).join(' / ')])]],
 ['購入記録',[['カルテNo','氏名','台数','購入年月日','保証年数','保証年月日','紛失保証','保証年数（年）','保証回数（回）','保証期限','右 器種名','右 器種No.','左 器種名','左 器種No.','自由項目'],...D.cs.flatMap(c=>(c.ha||[]).filter(h=>h.buy||(h.R&&h.R.model)||(h.L&&h.L.model)||(h.R&&h.R.no)||(h.L&&h.L.no)).map((h,i)=>[c.no||'',c.name||'',i+1,h.buy||'',h.wrY||'',h.wr||'',h.lg?'有':'無',h.lgY||'',h.lgN||'',(h.lg&&h.buy&&h.lgY)?addY(h.buy,h.lgY):(h.lgExp||''),(h.R&&h.R.model)||'',(h.R&&h.R.no)||'',(h.L&&h.L.model)||'',(h.L&&h.L.no)||'',[['R','右'],['L','左']].flatMap(([e,lab])=>((h[e]&&h[e].extra)||[]).filter(x=>x.k||x.v).map(x=>lab+' '+x.k+'：'+x.v)).join(' / ')]))]],
 ['修理',[['カルテNo','氏名','修理日','修理内容','金額'],...D.cs.flatMap(c=>(c.repairs||[]).map(r=>[c.no||'',c.name||'',r.date||'',r.content||'',(r.amount===''||r.amount==null)?'':+r.amount]))]],
 ['注文履歴',[['カルテNo','氏名','保存日','様式','概要','合計'],...D.cs.flatMap(c=>(c.orders||[]).map(o=>[c.no||'',c.name||'',o.date||'',o.formName||'',o.summary||'',(o.total===''||o.total==null)?'':+o.total]))]]];
@@ -185,7 +209,7 @@ const usedNos=new Set(D.cs.map(c=>parseInt(c.no,10)).filter(n=>n>0));let freePtr
 for(const ic of src.cs||[]){
 const ex=ic.name?D.cs.find(c=>samePerson(c,ic)):null;
 if(!ex){let nid=Date.now()+add;while(D.cs.some(c=>c.id===nid))nid++;ic.id=nid;const ino=parseInt(ic.no,10);if(ino>0){if(usedNos.has(ino)){while(usedNos.has(freePtr))freePtr++;ic.no=String(freePtr).padStart(4,'0');usedNos.add(freePtr)}else usedNos.add(ino)}D.cs.push(ic);add++;continue}
-for(const f of['kana','sex','tel','addr'])if(!ex[f]&&ic[f])ex[f]=ic[f];
+for(const f of['kana','sex','tel','zip','addr'])if(!ex[f]&&ic[f])ex[f]=ic[f];
 if(!ex.memo&&ic.memo)ex.memo=ic.memo;
 ex.au=mergeArr(ex.au,ic.au);ex.ha=mergeArr(ex.ha,ic.ha);
 ex.repairs=mergeArr(ex.repairs,ic.repairs);ex.orders=mergeArr(ex.orders,ic.orders);ex.reqs=mergeArr(ex.reqs,ic.reqs);

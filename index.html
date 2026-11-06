@@ -934,8 +934,9 @@ img,canvas,table{max-width:100%}
 }
 
         /* ===== PC幅：パーツ検索・修理可否チェックを広げる ===== */
-        @media (min-width: 1025px) {
+        @media (min-width: 1025px), (min-width: 1000px) and (orientation: landscape) {
             .container { max-width: 1560px; }
+            .dash { grid-template-columns: repeat(3, 1fr); }
             .parts-input-wrap, .rp-input, .rp-brands { max-width: 760px; }
             .parts-result.show { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items: start; }
             .parts-result .part-card { margin-bottom: 0; }
@@ -945,7 +946,7 @@ img,canvas,table{max-width:100%}
             .rp-result .rp-none, .rp-result .rp-foot { grid-column: 1 / -1; }
             .rp-all .rp-line { display: inline-flex; width: calc(33.333% - 9px); margin-right: 8px; vertical-align: top; }
         }
-        @media (min-width: 768px) and (max-width: 1024px) {
+        @media (min-width: 768px) and (max-width: 999px) and (orientation: landscape) {
             .parts-result.show { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; align-items: start; }
             .parts-result .part-card { margin-bottom: 0; }
             .parts-result .no-result { grid-column: 1 / -1; }
@@ -1060,7 +1061,7 @@ img,canvas,table{max-width:100%}
     <div class="footer-note">
         リンク先：<a href="https://www.njha.co.jp/dealers/" target="_blank" rel="noopener">NJH 販売店向け資料ページ</a>
     </div>
-    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v68</div>
+    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v69</div>
 </div>
 
 <!-- パーツ注文リスト -->

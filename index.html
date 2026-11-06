@@ -302,7 +302,7 @@
             border: 1.5px solid var(--border);
             border-left: 6px solid var(--border);
             border-radius: 12px;
-            padding: 14px 16px;
+            padding: 16px 18px;
             margin-bottom: 10px;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
@@ -337,9 +337,9 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            font-size: 0.78rem;
+            font-size: 0.92rem;
             font-weight: 700;
-            padding: 3px 10px;
+            padding: 4px 12px;
             border-radius: 999px;
             margin-bottom: 8px;
             letter-spacing: 0.02em;
@@ -358,7 +358,7 @@
         }
         .part-card .cat-tag {
             display: inline-block;
-            font-size: 0.72rem;
+            font-size: 0.85rem;
             color: var(--muted);
             background: #f1f5f9;
             padding: 2px 8px;
@@ -366,12 +366,12 @@
             margin-left: 6px;
         }
         .part-card .name {
-            font-weight: 600;
-            font-size: 1.02rem;
+            font-weight: 700;
+            font-size: 1.28rem;
             margin-bottom: 4px;
         }
         .part-card .note {
-            font-size: 0.85rem;
+            font-size: 1rem;
             color: var(--muted);
             margin: 0 0 10px 0;
             padding: 0;
@@ -379,7 +379,8 @@
         }
         .part-card .ask-btn {
             width: 100%;
-            padding: 10px;
+            padding: 13px;
+            font-size: 1.05rem;
             background: #edf2f7;
             border: 1.5px solid #cbd5e0;
             border-radius: 8px;
@@ -419,7 +420,7 @@
             background: var(--common-bg2);
         }
         .price-box .price {
-            font-size: 1.4rem;
+            font-size: 1.6rem;
             font-weight: 700;
             color: var(--primary);
         }
@@ -482,7 +483,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 12px;
+            padding: 13px 14px;
             cursor: pointer;
             border-bottom: 1px solid #f1f5f9;
         }
@@ -499,12 +500,12 @@
             flex-shrink: 0;
         }
         .suggest-item .s-name {
-            font-size: 0.92rem;
+            font-size: 1.06rem;
             color: var(--text);
             flex: 1;
         }
         .suggest-item .s-cat {
-            font-size: 0.75rem;
+            font-size: 0.86rem;
             color: var(--muted);
         }
         @media (max-width: 480px) {
@@ -577,8 +578,8 @@
             display: block;
             width: 100%;
             margin-top: 8px;
-            padding: 11px;
-            font-size: 0.95rem;
+            padding: 13px;
+            font-size: 1.08rem;
             font-weight: 700;
             font-family: inherit;
             color: #fff;
@@ -1038,7 +1039,7 @@ img,canvas,table{max-width:100%}
     <div class="footer-note">
         リンク先：<a href="https://www.njha.co.jp/dealers/" target="_blank" rel="noopener">NJH 販売店向け資料ページ</a>
     </div>
-    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v62</div>
+    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v65</div>
 </div>
 
 <!-- パーツ注文リスト -->
@@ -1707,28 +1708,32 @@ img,canvas,table{max-width:100%}
         return { key: "common", icon: "⚪" };
     }
 
+    function pnorm(s) {
+        return (s || "").normalize("NFKC").toLowerCase().replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60)).replace(/栓/g, "せん").replace(/[\s　]+/g, "");
+    }
+
     function searchText(p) {
-        return (p.name + " " + (p.note||"") + " " + p.brand + " " + p.cat + " " + (p.keywords||"") + " " + (catKeywords[p.cat]||"")).toLowerCase();
+        return pnorm(p.name + " " + (p.note||"") + " " + p.brand + " " + p.cat + " " + (p.keywords||"") + " " + (catKeywords[p.cat]||""));
     }
 
     function scoreItem(p, terms) {
         const text = searchText(p);
-        const nameLower = p.name.toLowerCase();
+        const nameLower = pnorm(p.name);
         let score = 0;
         terms.forEach(t => {
             if (!t) return;
             if (text.includes(t)) score += 2;
             if (nameLower.includes(t)) score += 3;
-            if (p.brand.toLowerCase().includes(t)) score += 1;
-            if (p.cat.toLowerCase().includes(t)) score += 1;
+            if (pnorm(p.brand).includes(t)) score += 1;
+            if (pnorm(p.cat).includes(t)) score += 1;
         });
         return score;
     }
 
     function getMatches(q, limit) {
-        const query = (q || "").trim().toLowerCase();
+        const query = (q || "").trim();
         if (!query) return [];
-        const terms = query.split(/[\s　]+/).filter(Boolean);
+        const terms = query.split(/[\s　]+/).map(t => pnorm(t)).filter(Boolean);
         const scored = partsDB.map(p => ({ ...p, score: scoreItem(p, terms) }))
             .filter(p => p.score > 0);
 
@@ -1747,12 +1752,12 @@ img,canvas,table{max-width:100%}
         while (result.length < limit) {
             let addedAny = false;
             for (const b of brandOrder) {
-                if (cursors[b] < groups[b].length) {
+                for (let n = 0; n < 2 && cursors[b] < groups[b].length && result.length < limit; n++) {
                     result.push(groups[b][cursors[b]]);
                     cursors[b]++;
                     addedAny = true;
-                    if (result.length >= limit) break;
                 }
+                if (result.length >= limit) break;
             }
             if (!addedAny) break;
         }
@@ -1827,7 +1832,7 @@ img,canvas,table{max-width:100%}
 
     function searchParts() {
         hideSuggest();
-        const matches = getMatches(partsQuery.value, 10);
+        const matches = getMatches(partsQuery.value, 30);
         if (!(partsQuery.value || '').trim()) {
             partsResult.innerHTML = '<div class="no-result">キーワードを入力してください</div>';
             partsResult.classList.add('show');
@@ -1842,7 +1847,7 @@ img,canvas,table{max-width:100%}
     }
 
     function renderSuggestions(q) {
-        const matches = getMatches(q, 8);
+        const matches = getMatches(q, 16);
         if (!matches.length) {
             hideSuggest();
             return;

@@ -816,5 +816,15 @@ dbInfoUpdate();
 // 「補聴器と備品」ボタンとヒントをボタン列（.bar）の中へまとめ、下部固定バーに含める
 (function(){var bar=document.querySelector('.bar');if(!bar)return;['both','bothHint'].forEach(function(id){var el=document.getElementById(id);if(el)bar.appendChild(el)});var msg=document.getElementById('msg');if(msg)bar.insertBefore(msg,bar.firstChild);})();
 </script>
+
+<script>
+// 注文履歴から開いたときの閲覧モード（編集不可）
+(function(){var q=new URLSearchParams(location.search);if(q.get('view')!=='1')return;var viewing=true;
+function off(){if(!viewing)return;document.querySelectorAll('input,select,textarea').forEach(function(el){el.disabled=true});['dbSave','toCust'].forEach(function(id){var b=document.getElementById(id);if(b)b.disabled=true});document.querySelectorAll('canvas').forEach(function(c){c.style.pointerEvents='none'});
+if(!document.getElementById('viewBar')){var d=document.createElement('div');d.id='viewBar';d.style.cssText='background:#fff7e6;border:1px solid #e0a63c;border-radius:10px;padding:10px 12px;margin:0 0 10px;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:8px';var s=document.createElement('span');s.textContent='📄 注文履歴からの表示です（編集できません）';var b=document.createElement('button');b.type='button';b.textContent='編集する';b.onclick=on;d.appendChild(s);d.appendChild(b);var bar=document.querySelector('.bar');if(bar&&bar.parentNode)bar.parentNode.insertBefore(d,bar);}}
+function on(){viewing=false;document.querySelectorAll('input,select,textarea').forEach(function(el){el.disabled=false});['dbSave','toCust'].forEach(function(id){var b=document.getElementById(id);if(b)b.disabled=false});document.querySelectorAll('canvas').forEach(function(c){c.style.pointerEvents=''});var d=document.getElementById('viewBar');if(d)d.remove();}
+document.addEventListener('click',function(e){if(viewing&&e.target&&e.target.closest&&e.target.closest('#nav'))setTimeout(off,60);});
+off();})();
+</script>
 </body>
 </html>

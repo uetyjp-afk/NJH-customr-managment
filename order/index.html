@@ -68,7 +68,7 @@ header h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   fieldset{padding:10px 11px}
   .bar{display:grid;grid-template-columns:1fr 1fr;gap:7px}
   .bar .btn{min-width:0;max-width:100%;overflow-wrap:anywhere}
-  #bBoth{grid-column:1/-1}
+  #bBoth,#bMold{grid-column:1/-1}
   .note{overflow-wrap:anywhere}
   .pv canvas{width:100%!important}
 }
@@ -82,10 +82,17 @@ header h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   #bBoth:disabled{display:none}
   #bothHint{grid-column:1/-1;margin:0}
   #bothHint:empty{display:none}
+  #bMold{grid-column:1/-1;margin-top:0;width:auto}
+  #bMold:disabled{display:none}
+  #moldHint{grid-column:1/-1;margin:0}
+  #moldHint:empty{display:none}
   main{padding-bottom:240px}
 }
+.moldBtn{display:block;width:100%;margin:8px 0;padding:14px 12px;border:0;border-radius:10px;background:#d97706;color:#fff;font-size:16px;font-weight:700;cursor:pointer;animation:moldBlink 1.1s ease-in-out infinite}
+@keyframes moldBlink{0%,100%{opacity:1}50%{opacity:.4}}
+.moldBack{display:block;width:100%;margin:8px 0;padding:11px 12px;border:2px solid #1d4e89;border-radius:10px;background:#fff;color:#1d4e89;font-size:15px;font-weight:700;cursor:pointer}
 </style></head><body>
-<header><button class="back" id="back" hidden>‹ 戻る</button><h1 id="ttl">NJH 補聴器 ご注文書 作成</h1><nav class="hnav"><button type="button" id="topNew" style="border:0;color:#fff;background:#7c3aed;border-radius:14px;padding:6px 9px;font-size:12px;white-space:nowrap">＋ 新規注文（最初から）</button><a href="../index.html" style="background:#ff7a00;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap">🏠 ホームに戻る</a><a href="../customer.html" onclick="try{var c=new URLSearchParams(location.search).get('cid')||(typeof PRE!=='undefined'&&PRE?PRE.cid:null);if(c)localStorage.setItem('njh_open_cust',JSON.stringify({id:c,tab:'o'}))}catch(e){}" style="background:#2e7d32;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap;margin-left:8px">💾 顧客管理へ移動</a><a href="../index.html#cart" id="navParts">🔩 パーツ注文</a><a href="../index.html#repair">🔧 修理可否</a><span style="font-size:11px;opacity:.7;margin-left:8px">v48</span></nav></header>
+<header><button class="back" id="back" hidden>‹ 戻る</button><h1 id="ttl">NJH 補聴器 ご注文書 作成</h1><nav class="hnav"><button type="button" id="topNew" style="border:0;color:#fff;background:#7c3aed;border-radius:14px;padding:6px 9px;font-size:12px;white-space:nowrap">＋ 新規注文（最初から）</button><a href="../index.html" style="background:#ff7a00;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap">🏠 ホームに戻る</a><a href="../customer.html" onclick="try{var c=new URLSearchParams(location.search).get('cid')||(typeof PRE!=='undefined'&&PRE?PRE.cid:null);if(c)localStorage.setItem('njh_open_cust',JSON.stringify({id:c,tab:'o'}))}catch(e){}" style="background:#2e7d32;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap;margin-left:8px">💾 顧客管理へ移動</a><a href="../index.html#cart" id="navParts">🔩 パーツ注文</a><a href="../index.html#repair">🔧 修理可否</a><span style="font-size:11px;opacity:.7;margin-left:8px">v49</span></nav></header>
 <main>
 <section id="v1"><p class="note" style="text-align:center;margin-top:20px">メーカーを選んでください</p><div class="tiles" id="tiles"></div></section>
 <section id="v2" hidden><div class="list" id="list"></div></section>
@@ -111,7 +118,7 @@ header h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 <label class="f">縦 <span id="dyv">0</span></label><input type="range" id="dy" min="-8" max="8" step="0.5" value="0"></details></fieldset>
 </div>
 <div class="pv">
-<div class="bar"><button class="btn" id="bPrint">印刷 / FAX</button><button class="btn" id="bMail">メールで送る</button><button class="btn" id="bSharePdf" style="background:#06c755">PDFを送る（LINEなど）</button><button class="btn s" id="bPdf">PDF保存</button><button class="btn s" id="bPng">画像保存</button><button class="btn s" id="bClr">入力を消す（この注文書だけ）</button><button class="btn s" id="bHist">📋 注文履歴</button><button class="btn s" id="bDb" style="background:#1d4e89;color:#fff">🗄 データベースに保存</button><button class="btn" id="bNew" style="background:#7c3aed">新規注文（最初から）</button><button class="btn" id="bBoth" disabled style="background:#2b6cb0;width:100%;margin-top:8px">補聴器と備品の注文を送る（PDFまとめて）</button><p id="bothHint" style="width:100%;margin:6px 0 0;font-size:12px;color:#b45309;line-height:1.5"></p></div>
+<div class="bar"><button class="btn" id="bPrint">印刷 / FAX</button><button class="btn" id="bMail">メールで送る</button><button class="btn" id="bSharePdf" style="background:#06c755">PDFを送る（LINEなど）</button><button class="btn s" id="bPdf">PDF保存</button><button class="btn s" id="bPng">画像保存</button><button class="btn s" id="bClr">入力を消す（この注文書だけ）</button><button class="btn s" id="bHist">📋 注文履歴</button><button class="btn s" id="bDb" style="background:#1d4e89;color:#fff">🗄 データベースに保存</button><button class="btn" id="bNew" style="background:#7c3aed">新規注文（最初から）</button><button class="btn" id="bBoth" disabled style="background:#2b6cb0;width:100%;margin-top:8px">補聴器と備品の注文を送る（PDFまとめて）</button><p id="bothHint" style="width:100%;margin:6px 0 0;font-size:12px;color:#b45309;line-height:1.5"></p><button class="btn" id="bMold" disabled style="background:#b45309;width:100%;margin-top:8px">補聴器とモールドの注文を送る（PDFまとめて）</button><p id="moldHint" style="width:100%;margin:6px 0 0;font-size:12px;color:#b45309;line-height:1.5"></p></div>
 <div id="warns"></div>
 <canvas id="cv" aria-label="ご注文書プレビュー"></canvas>
 <p class="note">FAX：印刷画面でFAX対応のプリンタ／複合機を選択。<br>
@@ -312,7 +319,12 @@ function upd(){if(!FM)return;syncAu();$('dxv').textContent=$('dx').value;$('dyv'
  FM.groups.forEach(g=>{if(g.t==='radio'||g.t==='multi')g.items.forEach(i=>{if(g.off&&g.off[i.k]){}})});
  // radio groups with off rules (e.g. grade vs series)
  FM.groups.forEach(g=>{if(g.off)Object.keys(g.off).forEach(k=>{const o=g.off[k];document.querySelectorAll(`#g_${g.id} input[value="${k}"]`).forEach(x=>{x.disabled=o.slice(1).includes(ST[o[0]])})})});
- $('warns').innerHTML=(w.length?`<div class="warn">未入力：${w.join('、')}</div>`:'')+(mold?'<div class="warn">モールド／プレートモールド（UP）は「モールド専用注文書」と「耳型」を添付してFAXしてください。</div>':'');
+ const BTEF=['stride','stride_sp','serene7686','rely_bte','boost_max','boost_ultra'];
+ const mTgt=FM.brand==='Beltone'?'bel_mold':FM.brand==='Unitron'?'uni_mold':null;
+ const mBtn=(mold&&mTgt&&!FM.mold&&!BTEF.includes(FM.id)&&!VIEWOPEN)?`<button type="button" class="moldBtn" onclick="openMoldForm()">${FM.brand==='Beltone'?'ベルトーン':'ユニトロン'} RICモールド注文書を開く</button>`:'';
+ let mFrom=null;try{mFrom=sessionStorage.getItem('njh_mold_from')}catch(e){}
+ const bBtn=(FM.mold&&mFrom&&!VIEWOPEN)?`<button type="button" class="moldBack" onclick="backFromMold()">← 補聴器の注文書に戻る</button>`:'';
+ $('warns').innerHTML=(w.length?`<div class="warn">未入力：${w.join('、')}</div>`:'')+bBtn+mBtn+(mold?'<div class="warn">モールド／プレートモールド（UP）は「モールド専用注文書」と「耳型」を添付してFAXしてください。</div>':'');
  HA_OK=(w.length===0);haSync();saveHaDraft();draw()}
 function ymd(v){if(!v)return['','',''];const p=v.split('-');return[p[0],String(+p[1]),String(+p[2])]}
 function draw(){if(!ready||!FM)return;const W=cv.width,Hh=cv.height,ox=+$('dx').value,oy=+$('dy').value,S=S2;cx.clearRect(0,0,W,Hh);cx.drawImage(IMG,0,0);cx.fillStyle=cx.strokeStyle='#111';cx.textBaseline='middle';
@@ -507,10 +519,12 @@ let HA_OK=false,snapT=null;
 async function snapHa(){
   if(!FM||!ready)return;
   try{
-    if(!HA_OK){await idbDel('ha_pdf');return}
+    const key=FM.mold?'mold_pdf':'ha_pdf';
+    if(!HA_OK){await idbDel(key);moldBothState();return}
     draw();
     const buf=await pdf().arrayBuffer();
-    await idbPut('ha_pdf',{buf,img:cv.toDataURL('image/jpeg',0.5),name:fname()+'.pdf',formId:FM.id,formName:FM.name,shop:$('shop').value||'',savedAt:Date.now()});
+    await idbPut(key,{buf,img:cv.toDataURL('image/jpeg',0.5),name:fname()+'.pdf',formId:FM.id,formName:FM.name,shop:$('shop').value||'',savedAt:Date.now()});
+    moldBothState();
   }catch(e){console.error(e)}
 }
 function bothState(){
@@ -523,7 +537,11 @@ function bothState(){
   else if(!n)m='パーツ・備品が未入力です（「🔩 パーツ注文」で追加してください）';
   if(h)h.textContent=m;
 }
-function haSync(){bothState();clearTimeout(snapT);snapT=setTimeout(snapHa,800)}
+function haSync(){bothState();moldBothState();clearTimeout(snapT);snapT=setTimeout(snapHa,800)}
+function openMoldForm(){if(!FM||FM.mold)return;const t=FM.brand==='Beltone'?'bel_mold':FM.brand==='Unitron'?'uni_mold':null;if(!t)return;saveHaDraft();try{sessionStorage.setItem('njh_mold_from',FM.id)}catch(e){}location.hash='form-'+t}
+function backFromMold(){let from=null;try{from=sessionStorage.getItem('njh_mold_from')}catch(e){}if(from)location.hash='form-'+from}
+async function idbGet(k){const d=await idbOpen();return new Promise((res,rej)=>{const t=d.transaction('kv','readonly');const rq=t.objectStore('kv').get(k);rq.onsuccess=()=>res(rq.result||null);rq.onerror=()=>rej(rq.error)})}
+async function moldBothState(){const b=$('bMold'),h=$('moldHint');if(!b)return;const rel=!!FM&&(!!FM.mold||FM.brand==='Beltone'||FM.brand==='Unitron');b.style.display=rel?'':'none';if(h)h.style.display=rel?'':'none';if(!rel)return;let other=null;try{other=await idbGet(FM.mold?'ha_pdf':'mold_pdf')}catch(e){}const ok=HA_OK&&!!other;b.disabled=!ok;let m='';if(!HA_OK)m='この注文書の必須項目を入力すると押せます';else if(!other)m=FM.mold?'補聴器の注文書が未入力です（戻って入力してください）':'モールド注文書が未入力です（モールドを選ぶと開くボタンが出ます）';if(h)h.textContent=m}
 /* ---- 送り方を選ぶ（共有メニューにアプリが出ない端末向け） ---- */
 function manualSend(files,sub,body,to){
   return new Promise(res=>{
@@ -639,6 +657,7 @@ $('bBoth').onclick=async()=>{
     const combinedName=fname()+'_補聴器_備品_2ページ.pdf';
     const files=[new File([combined],combinedName,{type:'application/pdf'})];
     const items=[{cap:'① 補聴器注文書',src:pages[0]},{cap:'② パーツ・備品注文書',src:pages[1]}];
+    $('cfPrint').textContent='補聴器と備品を印刷';
     const okSend=await confirmSend('この内容で送りますか？',($('shop').value||'貴店名未入力')+'　／　2ページPDF（補聴器＋パーツ・備品 '+lines.length+'品目）',items);
     if(!okSend)return;
     if(okSend==='print'){printPreviewItems(items);return}
@@ -654,6 +673,34 @@ $('bBoth').onclick=async()=>{
       }
     }catch(e){if(e&&e.name==='AbortError')return}
     if(await manualSend(files,sub,body,$('mailTo').value))recordHistoryRaw();
+  }catch(e){console.error(e);toast('まとめ送信に失敗しました：'+((e&&e.message)||e))}
+};
+$('bMold').onclick=async()=>{
+  try{
+    const snap=await idbGet(FM.mold?'ha_pdf':'mold_pdf');
+    if(!HA_OK||!snap){moldBothState();toast('補聴器とモールドの両方の注文書を入力すると送れます');return}
+    if(!ensureDrawn())return;
+    const cur=cv.toDataURL('image/jpeg',0.92);
+    const haImg=FM.mold?snap.img:cur,moldImg=FM.mold?cur:snap.img;
+    const combined=await imagePdf([haImg,moldImg]);
+    const combinedName=fname()+'_補聴器_モールド_2ページ.pdf';
+    const files=[new File([combined],combinedName,{type:'application/pdf'})];
+    const items=[{cap:'① 補聴器注文書',src:haImg},{cap:'② RICモールド注文書',src:moldImg}];
+    $('cfPrint').textContent='補聴器とモールドを印刷';
+    const okSend=await confirmSend('この内容で送りますか？',($('shop').value||'貴店名未入力')+'　／　2ページPDF（補聴器＋RICモールド）',items);
+    if(!okSend)return;
+    if(okSend==='print'){printPreviewItems(items);return}
+    const sub='【ご注文】補聴器＋RICモールド';
+    const body=($('shop').value||'')+'です。補聴器注文書とRICモールド注文書を2ページPDFで送ります。';
+    if(okSend==='manual'){await manualSend(files,sub,body,$('mailTo').value);return}
+    try{
+      if(navigator.canShare&&navigator.canShare({files})){
+        toast('共有先を選んでください（2ページPDF）');
+        await navigator.share({files,title:sub,text:body});
+        return;
+      }
+    }catch(e){if(e&&e.name==='AbortError')return}
+    await manualSend(files,sub,body,$('mailTo').value);
   }catch(e){console.error(e);toast('まとめ送信に失敗しました：'+((e&&e.message)||e))}
 };
 // パーツ注文へ行く前に下書き保存
@@ -672,8 +719,8 @@ function startNewOrder(){
   const shop=$('shop').value||'';
   ['contact','tel','fax','mailTo'].forEach(k=>{$(k).value='';ls.set('njh_'+k,'')});
   $('faxTo').value=FAXL[0][1];ls.set('njh_faxTo',FAXL[0][1]);
-  try{sessionStorage.setItem('njh_new_order_v1','1');ls.set('njh_shop',shop);ls.set('njh_ha_draft_v1','');ls.removeItem('njh_ha_current_form_v1')}catch(e){}
-  idbDel('ha_pdf').catch(()=>{});
+  try{sessionStorage.setItem('njh_new_order_v1','1');ls.set('njh_shop',shop);ls.set('njh_ha_draft_v1','');ls.removeItem('njh_ha_current_form_v1');sessionStorage.removeItem('njh_mold_from')}catch(e){}
+  idbDel('ha_pdf').catch(()=>{});idbDel('mold_pdf').catch(()=>{});
   location.hash='';
 }
 $('bNew').onclick=startNewOrder;
@@ -706,7 +753,7 @@ if((qp.get('view')||(PRE&&PRE.view))==='1')VIEWOPEN=true;
 if(op){if(oid&&cid){try{const db=JSON.parse(localStorage.getItem('njhc')||'null');const cu=db&&db.cs.find(x=>String(x.id)===String(cid));const rec=cu&&(cu.orders||[]).find(x=>String(x.id)===String(oid));if(rec&&rec.data){let m={};try{m=JSON.parse(ls.get('njh_ha_drafts_v1')||'{}')||{}}catch(e){}m[rec.formId]=rec.data;ls.set('njh_ha_drafts_v1',JSON.stringify(m));ls.set('njh_ha_draft_v1',JSON.stringify(rec.data));if(PRE)PRE.done[rec.formId]=1}}catch(e){}}
 const f=FORMS.find(x=>x.id===op);if(f){location.hash='form-'+op}}}catch(e){}
 function dbMsg(title,text){const old=document.getElementById('dbMsgModal');if(old)old.remove();const ov=document.createElement('div');ov.id='dbMsgModal';ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:320;display:flex;align-items:center;justify-content:center;padding:14px';ov.innerHTML='<div style="background:#fff;border-radius:14px;padding:18px;width:100%;max-width:420px"><b style="font-size:16px"></b><p style="margin:10px 0;font-size:14px;line-height:1.6"></p><button type="button" style="width:100%;padding:10px;border-radius:8px;border:1px solid #bbb;background:#fff">閉じる</button></div>';ov.querySelector('b').textContent=title;ov.querySelector('p').textContent=text;ov.querySelector('button').onclick=()=>ov.remove();ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});document.body.appendChild(ov)}
-function applyView(){document.querySelectorAll('input,select,textarea').forEach(el=>{el.disabled=true});['bDb','bClr','bNew','bBoth'].forEach(id=>{const b=$(id);if(b)b.disabled=true});document.querySelectorAll('canvas').forEach(c=>{c.style.pointerEvents='none'});if(!document.getElementById('viewBar')){const d=document.createElement('div');d.id='viewBar';d.style.cssText='background:#fff7e6;border:1px solid #e0a63c;border-radius:10px;padding:10px 12px;margin:0 0 10px;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:8px';const s=document.createElement('span');s.textContent='📄 注文履歴からの表示です（編集できません）';const b=document.createElement('button');b.type='button';b.textContent='編集する';b.className='btn s';b.onclick=applyEdit;d.appendChild(s);d.appendChild(b);const pv=document.querySelector('.pv');if(pv)pv.insertBefore(d,pv.firstChild)}}
+function applyView(){document.querySelectorAll('input,select,textarea').forEach(el=>{el.disabled=true});['bDb','bClr','bNew','bBoth','bMold'].forEach(id=>{const b=$(id);if(b)b.disabled=true});document.querySelectorAll('canvas').forEach(c=>{c.style.pointerEvents='none'});if(!document.getElementById('viewBar')){const d=document.createElement('div');d.id='viewBar';d.style.cssText='background:#fff7e6;border:1px solid #e0a63c;border-radius:10px;padding:10px 12px;margin:0 0 10px;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:8px';const s=document.createElement('span');s.textContent='📄 注文履歴からの表示です（編集できません）';const b=document.createElement('button');b.type='button';b.textContent='編集する';b.className='btn s';b.onclick=applyEdit;d.appendChild(s);d.appendChild(b);const pv=document.querySelector('.pv');if(pv)pv.insertBefore(d,pv.firstChild)}}
 function applyEdit(){VIEWOPEN=false;document.querySelectorAll('input,select,textarea').forEach(el=>{el.disabled=false});['bDb','bClr','bNew'].forEach(id=>{const b=$(id);if(b)b.disabled=false});document.querySelectorAll('canvas').forEach(c=>{c.style.pointerEvents=''});const d=document.getElementById('viewBar');if(d)d.remove();try{bothState()}catch(e){}try{upd()}catch(e){}}
 $('bHist').onclick=()=>{let db=null;try{db=JSON.parse(localStorage.getItem('njhc')||'null')}catch(e){}
 const rows=[];((db&&db.cs)||[]).forEach(c=>(c.orders||[]).forEach(o=>rows.push({cid:c.id,cname:c.name||'',o})));

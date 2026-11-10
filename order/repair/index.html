@@ -60,7 +60,7 @@ a.back{color:#fff;font-size:12px;opacity:.9;text-decoration:none}
 <canvas id="cv" width="1654" height="2339"></canvas>
 <div class="btns">
 <button type="button" class="b-pdf" id="dl">PDFで保存</button>
-<button type="button" class="b-print" id="pr">印刷</button><button type="button" id="toCust" style="background:#2e7d32;color:#fff">💾 保存して顧客管理へ移動</button><button type="button" id="dbSave" style="background:#1d4e89;color:#fff">🗄 データベースに保存</button><button type="button" id="clr" style="background:#eee">入力をクリア</button>
+<button type="button" class="b-print" id="pr">印刷</button><button type="button" id="toCust" style="background:#2e7d32;color:#fff">💾 保存して顧客管理へ戻る</button><button type="button" id="dbSave" style="background:#1d4e89;color:#fff">🗄 保存する（この画面のまま）</button><button type="button" id="clr" style="background:#eee">入力をクリア</button>
 </div>
 <p class="note" id="dlNote"></p>
 </div>
@@ -97,6 +97,7 @@ try{const D=JSON.parse(localStorage.getItem('njhc')||'null');
 if(V.haSel<0||V.haSel>=HAS.length)V.haSel=HAS.length-1;
 function addY2(d,y){if(!d||!y)return'';const t=new Date(d+'T00:00:00');if(isNaN(t))return'';t.setFullYear(t.getFullYear()+ +y);return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')}
 function flatP2(h){if(h.wr&&today()<=h.wr)return '保証期間内（無償）';const lim=addY2(h.buy,5);return lim&&today()<=lim?'最大26,000円（〜5年目の一律修理）※充電式オーダーメイドは最大36,000円':'最大52,000円（6年目以降）'}
+function earTxt(rec){if(!rec)return'';const f=(e,lb)=>{const m=(e&&e.model)||'',n=(e&&e.no)||'';if(!m&&!n)return'';return lb+'：'+m+(n?'（'+n+'）':'')};return [rec.buy||'',f(rec.R,'右'),f(rec.L,'左')].filter(Boolean).join('　')}
 function deriveSerial(){const c=V.common;if(V.ear==='R')return c.noR||'';if(V.ear==='L')return c.noL||'';return[c.noR&&'右 '+c.noR,c.noL&&'左 '+c.noL].filter(Boolean).join('　')}
 function applyHa(){const rec=HAS[V.haSel];if(!rec)return;const c=V.common;c.buy=rec.buy||'';const rm=rec.R&&rec.R.model||'',lm=rec.L&&rec.L.model||'';
  c.model=V.ear==='R'&&rm?rm:V.ear==='L'&&lm?lm:(rm&&lm&&rm!==lm?rm+' / '+lm:rm||lm);
@@ -110,7 +111,7 @@ function haSection(){if(!HAS.length)return `<div class="card"><h2>補聴器の�
  return `<div class="card"><h2>どの補聴器ですか？（選ぶと自動入力）</h2>
  <label>購入記録</label><div class="chips">${HAS.map((h,i)=>`<button type="button" class="chip${i===V.haSel?' on':''}" data-ha="${i}">${esc(h.buy||'購入日不明')}：${esc((h.R&&h.R.model)||(h.L&&h.L.model)||'')}</button>`).join('')}</div>
  <label>対象</label><div class="chips">${[['R','右耳'],['L','左耳'],['B','両耳']].map(([id,t])=>`<button type="button" class="chip${V.ear===id?' on':''}" data-ear="${id}">${t}</button>`).join('')}</div>
- <p class="note">選択中の補聴器：${esc(rec?(rec.buy||'')+'　右：'+((rec.R&&rec.R.model)||'')+'（'+((rec.R&&rec.R.no)||'')+'）　左：'+((rec.L&&rec.L.model)||'')+'（'+((rec.L&&rec.L.no)||'')+'）':'')}</p>${rec&&rec.buy?'<p style="font-weight:700;font-size:15px;color:#b45309;margin:6px 0 2px">修理費用の目安：'+flatP2(rec)+'</p>':''}</div>`}
+ <p class="note">選択中の補聴器：${esc(earTxt(rec))}</p>${rec&&rec.buy?'<p style="font-weight:700;font-size:15px;color:#b45309;margin:6px 0 2px">修理費用の目安：'+flatP2(rec)+'</p>':''}</div>`}
 function commonSection(){const c='common';return `<div class="card"><h2>お店・お客様情報（自動入力）</h2><div class="g2">
  ${inp(c+'.shop','貴店名')}${inp(c+'.staff','ご担当者')}
  ${inp(c+'.tel','電話番号')}${inp(c+'.fax','FAX番号')}
@@ -123,16 +124,16 @@ function render(){document.querySelectorAll('nav button').forEach(b=>b.classList
  if(V.form==='repair'){h+=`<div class="card"><h2>① 修理の種類</h2>${chipsHtml('repair.kinds',KINDS)}
   ${v.kinds.includes('hf4')?inp('repair.hf4text','HF4の内容（　）内') :''}
   ${inp('repair.dateR','貴店受付日','date')}</div>
-  <div class="card"><h2>③ 故障状況（当てはまるものを選択）</h2>${chipsHtml('repair.syms',SYMS.map(s=>[s[0],s[1]]))}
+  <div class="card"><h2>② 故障状況（当てはまるものを選択）</h2>${chipsHtml('repair.syms',SYMS.map(s=>[s[0],s[1]]))}
   <div class="g3">${inp('repair.days','電池寿命早い（日数）','number')}${inp('repair.hours','充電寿命早い（時間）','number')}${inp('repair.tegusMm','テグス（mm）','number')}</div>
   <label>テグス取付の種類</label>${chipsHtml('repair.tegusType',[['1','1本'],['ring','輪']],true)}</div>
-  <div class="card"><h2>コメント・付属品</h2>
+  <div class="card"><h2>③ コメント・付属品</h2>
   <label>コメント</label><textarea rows="2" data-b="repair.comment">${esc(v.comment)}</textarea>
   <div style="margin-top:6px">${chipsHtml('repair.shopConfirm',[['1','お店で上記の症状確認']],true)}</div>
   <label style="margin-top:10px">付属品（同封するもの）</label>${chipsHtml('repair.accs',ACCS.map(a=>[a[0],a[1]]))}
   <div class="g2">${inp('repair.caseNum','ケース（個数）')}${inp('repair.batNum','電池（個数）')}</div>
   <div class="g2">${inp('repair.mihonText','見本補聴器（内容）')}${inp('repair.sonotaText','その他（内容）')}</div></div>
-  <div class="card"><h2>備考・到着希望日</h2>
+  <div class="card"><h2>④ 備考・到着希望日</h2>
   ${chipsHtml('repair.telConsult',[['1','電話相談希望']],true)}
   <label>備考</label><textarea rows="2" data-b="repair.memo">${esc(v.memo)}</textarea>
   ${inp('repair.arrival','ご到着希望日（空欄＝標準の5営業日発送）','date')}</div>`}

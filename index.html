@@ -1061,7 +1061,7 @@ img,canvas,table{max-width:100%}
     <div class="footer-note">
         リンク先：<a href="https://www.njha.co.jp/dealers/" target="_blank" rel="noopener">NJH 販売店向け資料ページ</a>
     </div>
-    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v72</div>
+    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v73</div>
 </div>
 
 <!-- パーツ注文リスト -->
@@ -1830,38 +1830,14 @@ img,canvas,table{max-width:100%}
                 <div class="name">${p.name}</div>
                 <div class="note">${p.note || ''}</div>
                 ${optsHtml}
-                <button type="button" class="ask-btn" data-id="${p.id}">これですか？ → 価格を表示</button>
+                <div class="price-box price-box-${meta.key} show" id="price-${p.id}">${p.price > 0 ? `<div class="price">¥${p.price.toLocaleString()}</div><div class="tax">税込 ／ ${p.note || p.cat} ／ ${p.brand}</div>` : `<div class="price" style="font-size:1.1rem;">価格はカタログでご確認ください</div><div class="tax">${p.note || p.cat} ／ ${p.brand}</div>`}</div>
                 <button type="button" class="add-btn" data-add="${p.id}">🛒 注文リストに追加</button>
-                <div class="price-box price-box-${meta.key}" id="price-${p.id}"></div>
             `;
             partsResult.appendChild(card);
         });
         partsResult.classList.add('show');
 
-        partsResult.querySelectorAll('.ask-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const id = this.dataset.id;
-                const part = partsDB.find(x => x.id === id);
-                const box = document.getElementById('price-' + id);
-                if (!part || !box) return;
-
-                if (part.price > 0) {
-                    box.innerHTML = `
-                        <div class="price">¥${part.price.toLocaleString()}</div>
-                        <div class="tax">税込 ／ ${part.note || part.cat} ／ ${part.brand}</div>
-                    `;
-                } else {
-                    box.innerHTML = `
-                        <div class="price" style="font-size:1.1rem;">価格はカタログでご確認ください</div>
-                        <div class="tax">${part.note || part.cat} ／ ${part.brand}</div>
-                    `;
-                }
-                box.classList.add('show');
-                this.textContent = '価格を表示しました ✓';
-                this.disabled = true;
-                this.style.opacity = '0.7';
-            });
-        });
+        partsResult.querySelectorAll('.add-btn').forEach(updAddBtn);
     }
 
     function searchParts() {
@@ -2186,6 +2162,7 @@ img,canvas,table{max-width:100%}
     }
 
     function updateCartUI() {
+        document.querySelectorAll('#partsResult .add-btn').forEach(updAddBtn);
         const T = cartTotals();
         const bar = cEl('cartBar');
         const hasAny = T.count > 0;
@@ -2715,9 +2692,17 @@ function cFname() {
         else {
             if (!cEl('cartModal').classList.contains('hidden')) hideCart();
             if (location.hash === '#parts') document.querySelector('.parts-section').scrollIntoView({ block: 'start' });
+            if (location.hash === '#repair') document.querySelector('.repair-section').scrollIntoView({ block: 'start' });
         }
     }
     window.addEventListener('hashchange', routeHash);
+
+    // 追加ボタンの表示をカートの中身と一致させる
+    function updAddBtn(b) {
+        if (!b || !b.dataset) return;
+        const inCart = cart.some(c => c.id === b.dataset.add);
+        b.textContent = inCart ? '✓ 注文リストに入っています（タップでもう1つ追加）' : '🛒 注文リストに追加';
+    }
 
     // 検索結果カードの「注文リストに追加」
     partsResult.addEventListener('click', e => {
@@ -2737,9 +2722,8 @@ function cFname() {
             opts = { metal, cord };
         }
         addToCart(id, opts);
-        const old = b.textContent;
         b.textContent = '追加しました ✓';
-        setTimeout(() => { b.textContent = old; }, 1200);
+        setTimeout(() => { updAddBtn(b); }, 1200);
     });
 
     function renderCartSearch(list) {

@@ -1061,7 +1061,7 @@ img,canvas,table{max-width:100%}
     <div class="footer-note">
         リンク先：<a href="https://www.njha.co.jp/dealers/" target="_blank" rel="noopener">NJH 販売店向け資料ページ</a>
     </div>
-    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v73</div>
+    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v74</div>
 </div>
 
 <!-- パーツ注文リスト -->
@@ -2202,7 +2202,7 @@ img,canvas,table{max-width:100%}
             }).join('');
         }
         const T = cartTotals(L);
-        cEl('cartSum').innerHTML = `<span>${T.kinds}品目 ／ 合計 ${T.count}点</span><b>${cYen(T.sum)}</b>`;
+        cEl('cartSum').innerHTML = `<span>${T.kinds}品目 ／ 合計 ${T.count}点</span><b>上代合計 ${cYen(T.sum)}</b>`;
         cEl('cartSumNote').textContent = T.unpriced
             ? `※価格が未設定の${T.unpriced}品目は合計に含まれません（カタログでご確認ください）`
             : '※表示価格の合算です（非課税品は非課税価格）。実際の請求額は納品書をご確認ください';
@@ -2282,7 +2282,7 @@ img,canvas,table{max-width:100%}
         out.push(`ご注文日：${jaDate(cEl('cOrderDate').value)}` + (cEl('cWishDate').value ? `　ご希望納期：${jaDate(cEl('cWishDate').value)}` : ''));
         out.push('');
         L.forEach((l, i) => out.push(`${i + 1}. ${l.name}${l.note && !l.custom ? '（' + l.note + '）' : ''} ×${l.qty}　${l.price > 0 ? cYen(l.price * l.qty) : '（価格要確認）'}`));
-        out.push('', `合計 ${cYen(T.sum)}` + (T.unpriced ? `（価格要確認${T.unpriced}品目を除く）` : ''));
+        out.push('', `上代合計 ${cYen(T.sum)}` + (T.unpriced ? `（価格要確認${T.unpriced}品目を除く）` : ''));
         const note = cEl('cNote').value.trim();
         if (note) out.push('', '【備考】', note);
         return out.join('\n');
@@ -2407,7 +2407,7 @@ img,canvas,table{max-width:100%}
                 cx.fillStyle = '#f4f7f5'; cx.fillRect(36, ty, 523, 28);
                 cx.strokeStyle = '#333'; cx.strokeRect(36, ty, 523, 28);
                 line(col.amt[0], ty, col.amt[0], ty + 28);
-                txt(`合計  ${T.kinds}品目 ／ ${T.count}点`, col.name[0] + 4, ty + 18, 10.5, 'left', true);
+                txt(`上代合計  ${T.kinds}品目 ／ ${T.count}点`, col.name[0] + 4, ty + 18, 10.5, 'left', true);
                 if (T.unpriced) txt(`※価格要確認${T.unpriced}品目は含まず`, col.amt[0] - 6, ty + 18, 8, 'right', false, '#c53030');
                 txt(T.sum.toLocaleString('ja-JP'), col.amt[1] - 5, ty + 19, 12.5, 'right', true);
             }

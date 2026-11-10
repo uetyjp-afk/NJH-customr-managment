@@ -92,7 +92,7 @@ header h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @keyframes moldBlink{0%,100%{opacity:1}50%{opacity:.4}}
 .moldBack{display:block;width:100%;margin:8px 0;padding:11px 12px;border:2px solid #1d4e89;border-radius:10px;background:#fff;color:#1d4e89;font-size:15px;font-weight:700;cursor:pointer}
 </style></head><body>
-<header><button class="back" id="back" hidden>‹ 戻る</button><h1 id="ttl">NJH 補聴器 ご注文書 作成</h1><nav class="hnav"><button type="button" id="topNew" style="border:0;color:#fff;background:#7c3aed;border-radius:14px;padding:6px 9px;font-size:12px;white-space:nowrap">＋ 新規注文（最初から）</button><a href="../index.html" style="background:#ff7a00;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap">🏠 ホームに戻る</a><a href="../customer.html" onclick="try{var c=new URLSearchParams(location.search).get('cid')||(typeof PRE!=='undefined'&&PRE?PRE.cid:null);if(c)localStorage.setItem('njh_open_cust',JSON.stringify({id:c,tab:'o'}))}catch(e){}" style="background:#2e7d32;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap;margin-left:8px">💾 顧客管理へ移動</a><a href="../index.html#cart" id="navParts">🔩 パーツ注文</a><a href="../index.html#repair">🔧 修理可否</a><span style="font-size:11px;opacity:.7;margin-left:8px">v51</span></nav></header>
+<header><button class="back" id="back" hidden>‹ 戻る</button><h1 id="ttl">NJH 補聴器 ご注文書 作成</h1><nav class="hnav"><button type="button" id="topNew" style="border:0;color:#fff;background:#7c3aed;border-radius:14px;padding:6px 9px;font-size:12px;white-space:nowrap">＋ 新規注文（最初から）</button><a href="../index.html" style="background:#ff7a00;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap">🏠 ホームに戻る</a><a href="../customer.html" onclick="try{var c=new URLSearchParams(location.search).get('cid')||(typeof PRE!=='undefined'&&PRE?PRE.cid:null);if(c)localStorage.setItem('njh_open_cust',JSON.stringify({id:c,tab:'o'}))}catch(e){}" style="background:#2e7d32;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap;margin-left:8px">💾 顧客管理へ移動</a><a href="../index.html#cart" id="navParts">🔩 パーツ注文</a><a href="../index.html#repair">🔧 修理可否</a><span style="font-size:11px;opacity:.7;margin-left:8px">v52</span></nav></header>
 <main>
 <section id="v1"><p class="note" style="text-align:center;margin-top:20px">メーカーを選んでください</p><div class="tiles" id="tiles"></div></section>
 <section id="v2" hidden><div class="list" id="list"></div></section>
@@ -732,7 +732,27 @@ let db=null;try{db=JSON.parse(localStorage.getItem('njhc')||'null')}catch(e){}
 const cu=db&&db.cs.find(x=>String(x.id)===String(cid));if(!cu){dbMsg('保存できません','顧客管理に該当の顧客が見つかりませんでした。');return}
 cu.orders=cu.orders||[];
 const oid=qp.get('oid')||(PRE&&PRE.oid)||null;
-const mdl=(()=>{const pri=/器種|機種|シリーズ|グレード/;let sel='';FM.groups.forEach(g=>{if(sel||!pri.test(g.title||''))return;const v=g.t==='ear'?(ST[g.id+'R']||ST[g.id+'L']):(g.t==='multi'?(ST[g.id]||[])[0]:ST[g.id]);const it=v&&g.items.find(x=>x.k===v);if(it)sel=it.l||''});let ears='';FM.groups.forEach(g=>{if(g.t!=='ear')return;const r=!!ST[g.id+'R'],l=!!ST[g.id+'L'];if(r&&l)ears='B';else if(r)ears='R';else if(l)ears='L'});const nm=FM.name||'';let md=sel;if(!(sel&&(sel===nm||sel.indexOf(nm+' ')===0)))md=(nm+(sel?' '+sel:'')).trim();return{model:md,ears:ears||'B'}})();
+const mdl=(()=>{let ears='';FM.groups.forEach(g=>{if(g.t!=='ear')return;const r=!!ST[g.id+'R'],l=!!ST[g.id+'L'];if(r&&l)ears='B';else if(r)ears='R';else if(l)ears='L'});ears=ears||'B';
+const pri=/器種|機種|シリーズ|グレード/;
+const selOf=g=>{const v=g.t==='ear'?(ST[g.id+'R']||ST[g.id+'L']):(g.t==='multi'?(ST[g.id]||[])[0]:ST[g.id]);const it=v&&g.items.find(x=>x.k===v);return it?(it.l||''):''};
+const clean=s=>(s||'').replace(/（.*?）|\(.*?\)/g,'').replace(/片耳|両耳/g,'').replace(/\s+/g,' ').trim();
+const labs=[];FM.groups.forEach(g=>{if(!pri.test(g.title||''))return;const raw=selOf(g);if(raw)labs.push({t:g.title||'',raw,l:clean(raw)})});
+const nm=FM.name||'';
+const sel0=labs.length?labs[0].raw:'';const oldMd=(sel0&&(sel0===nm||sel0.indexOf(nm+' ')===0))?sel0:(nm+(sel0?' '+sel0:'')).trim();
+if(!labs.length)return{model:oldMd,ears};
+let grade='',mr='',code='',series='',head='',combined=false;
+labs.forEach(o=>{const sq=o.l.replace(/\s+/g,'');const cm=sq.match(/(\d+S?DWC?)/);if(cm&&!code)code=cm[1];
+if(/(^|\s)MR(\s|$)/.test(o.l))mr='MR';
+const gm=o.l.match(/グレード\s*(\d+)/);if(gm){grade=gm[1];if(cm)combined=true}
+if(/シリーズ/.test(o.l)){const sm=o.l.match(/^(R|312|RS)シリーズ/);if(sm)series=sm[1]}
+if(/グレード/.test(o.t)&&!gm&&!grade){if(cm){const tm=o.l.match(/(\d+)\s*$/);if(tm)grade=tm[1]}else{const lm=o.l.match(/^(\d+)/);if(lm)grade=lm[1];else{const tm=o.l.match(/(\d+)\s*$/);if(tm)grade=tm[1]}}}});
+labs.forEach(o=>{if(head||!/グレード/.test(o.t))return;if(/(\d+S?DWC?)/.test(o.l.replace(/\s+/g,'')))return;if(/グレード\s*\d+/.test(o.l))return;const rest=o.l.replace(/(^|\s)MR(\s|$)/,' ').replace(/\d+\s*$/,'').trim();if(rest)head=o.l.replace(/(^|\s)MR(\s|$)/,' ').replace(/\s+/g,' ').trim()});
+let md='';
+if(FM.id==='stride_sp'){const sv=labs.map(o=>o.l).join(' ');md='Stride V-'+(/UP/.test(sv)?'UP':'SP')+(grade?' '+grade:'')}
+else if(combined&&code&&grade){const base=nm.split(' / ')[0].replace(/\s+\S*\d\S*$/,'').trim()||nm;md=base+' '+grade+'-'+code}
+else if(head){md=head;if(code&&md.replace(/\s+/g,'').indexOf(code)<0)md+=' '+code;if(series)md+=' '+series;if(mr&&!/(^|\s)MR(\s|$)/.test(md))md+=' MR'}
+else if(grade||code){const base=nm.split(' / ')[0].replace(/\s+\S*\d\S*$/,'').trim()||nm;md=base;if(grade)md+=' '+grade;if(code)md+=' '+code;if(series)md+=' '+series;if(mr)md+=' MR'}
+return{model:md||oldMd,ears}})();
 const RC_L=['','M','P','HP','SP','UP','LP','MP','MR','その他'];
 const gselT=(g,e)=>{if(!g)return '';if(g.t==='ear'){const v=ST[g.id+e];const it=v&&g.items.find(x=>x.k===v);return it?(it.l||''):''}if(g.t==='radio'||g.t==='multi'){const v=g.t==='multi'?(ST[g.id]||[])[0]:ST[g.id];const it=v&&g.items.find(x=>x.k===v);return it?(it.l||''):''}return ''};
 const pickG=res=>{for(const re of res){const g=FM.groups.find(x=>re.test(x.title||''));if(g&&(gselT(g,'R')||gselT(g,'L')))return g}return null};

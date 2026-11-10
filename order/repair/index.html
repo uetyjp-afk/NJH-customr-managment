@@ -229,5 +229,13 @@ if(RID){try{const D2=JSON.parse(localStorage.getItem('njhc')||'null');const cu=D
 if(HAS.length&&V.haSel>=0&&!RESTORED)applyHa();
 render();
 </script>
+<script>
+// 顧客画面の依頼書履歴から開いたときの閲覧モード（用紙のみ表示）
+(function(){var q=new URLSearchParams(location.search);if(q.get('view')!=='1')return;var viewing=true;
+function off(){if(!viewing)return;var secs=document.getElementById('secs');if(secs)secs.style.display='none';var nav=document.querySelector('nav');if(nav)nav.style.display='none';['dbSave','toCust','clr'].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display='none'});document.querySelectorAll('input,select,textarea').forEach(function(el){el.disabled=true});
+if(!document.getElementById('viewBar')){var d=document.createElement('div');d.id='viewBar';d.style.cssText='background:#fff7e6;border:1px solid #e0a63c;border-radius:10px;padding:10px 12px;margin:0 0 10px;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:8px';var s=document.createElement('span');s.textContent='📄 依頼書履歴からの表示です（編集できません）';var b=document.createElement('button');b.type='button';b.textContent='編集する';b.style.cssText='background:#fff;border:1px solid #bbb;border-radius:8px;padding:8px 14px';b.onclick=on;d.appendChild(s);d.appendChild(b);var card=document.querySelector('main .card');if(card&&card.parentNode)card.parentNode.insertBefore(d,card);}}
+function on(){viewing=false;var secs=document.getElementById('secs');if(secs)secs.style.display='';var nav=document.querySelector('nav');if(nav)nav.style.display='';['dbSave','toCust','clr'].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display=''});document.querySelectorAll('input,select,textarea').forEach(function(el){el.disabled=false});var d=document.getElementById('viewBar');if(d)d.remove();}
+off();})();
+</script>
 </body>
 </html>

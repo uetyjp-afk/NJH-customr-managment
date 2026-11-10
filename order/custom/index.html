@@ -729,9 +729,10 @@ if(!Array.isArray(cust.orders))cust.orders=[];
 const rec={id:OID||Date.now(),date:(V.odY||"")+"/"+(V.odM||"")+"/"+(V.odD||""),formId:cur.id,mid:MID[cur.id]||cur.id,formName:cur.name,cust:V.cust||cust.name||"",summary:orderSummary(),model:((cur.name||"")+" "+orderSummary().split("／").filter(p=>p&&!/^合計/.test(p)&&!/^(両耳|右耳|左耳)$/.test(p)).join(" ")).trim(),ears:V.ears||"B",total:V.total||"",data:JSON.parse(JSON.stringify(V)),savedAt:Date.now()};
 const ix=cust.orders.findIndex(x=>x.id===rec.id);
 if(ix>=0){rec.st=cust.orders[ix].st||"注文中";if(cust.orders[ix].haIdx!=null)rec.haIdx=cust.orders[ix].haIdx}else{rec.st="注文中"}if(ix>=0)cust.orders[ix]=rec;else cust.orders.push(rec);
+try{if(rec.model){if(!Array.isArray(cust.ha))cust.ha=[];let hi=(rec.haIdx!=null&&cust.ha[rec.haIdx])?rec.haIdx:-1;if(hi<0){const blankE=E=>E&&!E.model&&!E.no;const bi=cust.ha.findIndex(H2=>H2&&!H2.buy&&blankE(H2.R)&&blankE(H2.L));if(bi>=0)hi=bi;else{const nE=()=>({model:"",no:"",vol:"",rc:"",tube:"",ear:"",bat:"",extra:[]});cust.ha.push({buy:"",wr:"",wrY:"",lg:"",lgY:"",lgN:"",lgExp:"",lgAmt:"",extra:[],R:nE(),L:nE()});hi=cust.ha.length-1}rec.haIdx=hi}const H=cust.ha[hi];if(!H.buy&&rec.date)H.buy=rec.date.replace(/\//g,"-");if(rec.ears==="B"||rec.ears==="R")H.R.model=rec.model;if(rec.ears==="B"||rec.ears==="L")H.L.model=rec.model}}catch(e){}
 try{localStorage.setItem("njhc",JSON.stringify(db))}catch(e){m.textContent="保存できませんでした（端末の容量不足の可能性があります）";return}
 OID=rec.id;CID=cust.id;DB_CUST=cust;
-m.textContent="データベースに保存しました："+(cust.name||"")+" 様の注文履歴（"+rec.date+" "+rec.formName+"）";
+m.textContent="データベースに保存しました："+(cust.name||"")+" 様の注文履歴（"+rec.date+" "+rec.formName+"）"+(rec.haIdx!=null?"。補聴器の記録（器種名）にも転記しました":"");
 dbInfoUpdate();
 };
 
@@ -751,6 +752,7 @@ if(!Array.isArray(cust.orders))cust.orders=[];
 const rec={id:OID||Date.now(),date:(V.odY||"")+"/"+(V.odM||"")+"/"+(V.odD||""),formId:cur.id,mid:MID[cur.id]||cur.id,formName:cur.name,cust:V.cust||cust.name||"",summary:orderSummary(),model:((cur.name||"")+" "+orderSummary().split("／").filter(p=>p&&!/^合計/.test(p)&&!/^(両耳|右耳|左耳)$/.test(p)).join(" ")).trim(),ears:V.ears||"B",total:V.total||"",data:JSON.parse(JSON.stringify(V)),savedAt:Date.now()};
 const ix=cust.orders.findIndex(x=>x.id===rec.id);
 if(ix>=0){rec.st=cust.orders[ix].st||"注文中";if(cust.orders[ix].haIdx!=null)rec.haIdx=cust.orders[ix].haIdx}else{rec.st="注文中"}if(ix>=0)cust.orders[ix]=rec;else cust.orders.push(rec);
+try{if(rec.model){if(!Array.isArray(cust.ha))cust.ha=[];let hi=(rec.haIdx!=null&&cust.ha[rec.haIdx])?rec.haIdx:-1;if(hi<0){const blankE=E=>E&&!E.model&&!E.no;const bi=cust.ha.findIndex(H2=>H2&&!H2.buy&&blankE(H2.R)&&blankE(H2.L));if(bi>=0)hi=bi;else{const nE=()=>({model:"",no:"",vol:"",rc:"",tube:"",ear:"",bat:"",extra:[]});cust.ha.push({buy:"",wr:"",wrY:"",lg:"",lgY:"",lgN:"",lgExp:"",lgAmt:"",extra:[],R:nE(),L:nE()});hi=cust.ha.length-1}rec.haIdx=hi}const H=cust.ha[hi];if(!H.buy&&rec.date)H.buy=rec.date.replace(/\//g,"-");if(rec.ears==="B"||rec.ears==="R")H.R.model=rec.model;if(rec.ears==="B"||rec.ears==="L")H.L.model=rec.model}}catch(e){}
 try{localStorage.setItem("njhc",JSON.stringify(db))}catch(e){m.textContent="保存できませんでした（端末の容量不足の可能性があります）";return}
 OID=rec.id;CID=cust.id;DB_CUST=cust;
 try{localStorage.setItem("njh_open_cust",JSON.stringify({id:cust.id,tab:"o"}))}catch(e){}

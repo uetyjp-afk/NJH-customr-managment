@@ -966,7 +966,7 @@ img,canvas,table{max-width:100%}
     <div class="subtitle">Beltone / Unitron 書類・マニュアル検索（NJH連携）</div>
 
     <div class="dash">
-        <a class="quick-card" href="./customer.html" style="background:linear-gradient(135deg,#1a365d,#2b6cb0)"><span class="q-ico">📋</span><b>顧客管理 <span class="dash-badge" id="dashLoan"></span><span class="dash-badge" id="dashRep"></span><span class="dash-badge" id="dashOrd"></span><span class="dash-badge" id="dashWar"></span></b><small>検索・登録・履歴<br>顧客・聴力・補聴器記録 → 注文書へ自動入力</small></a>
+        <a class="quick-card" href="./customer.html" style="background:linear-gradient(135deg,#1a365d,#2b6cb0)"><span class="q-ico">📋</span><b>顧客管理 <span class="dash-badge" id="dashLoan"></span><span class="dash-badge" id="dashRep"></span><span class="dash-badge" id="dashOrd"></span><span class="dash-badge" id="dashWar"></span><span class="dash-badge" id="dashRepair"></span></b><small>検索・登録・履歴<br>顧客・聴力・補聴器記録 → 注文書へ自動入力</small></a>
         <a class="quick-card quick-order" href="./order/index.html" id="quickHaOrder">
             <span class="q-ico">✍️</span>
             <b>補聴器の注文書を作成</b>
@@ -2937,6 +2937,7 @@ function cFname() {
         .replace(/[\u3041-\u3096]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60))
         .replace(/[ァィゥェォャュョッヮヵヶ]/g, c => 'アイウエオヤユヨツワカケ'['ァィゥェォャュョッヮヵヶ'.indexOf(c)])
         .replace(/[\s　、，,・()（）\-‐]/g, '');
+    window.__repairDB = repairDB; window.__RP_ALIAS = RP_ALIAS; window.__rpNorm = rpNorm;
     const rpState = e => {
         const [y, m] = e.split('.').map(Number), d = new Date();
         const a = y * 12 + m, c = d.getFullYear() * 12 + d.getMonth() + 1;
@@ -3025,18 +3026,22 @@ function cFname() {
 <script>
 (function(){
 function cnt(){try{var D=JSON.parse(localStorage.getItem('njhc')||'null');if(!D||!D.cs)return;
-var loans=0,stale=0,rep=0,due=0,ord=0,war=0;var now=new Date();var lim=new Date(now.getFullYear(),now.getMonth()-6,now.getDate());
+var loans=0,stale=0,rep=0,due=0,ord=0,war=0,repEnd=0;var now=new Date();var lim=new Date(now.getFullYear(),now.getMonth()-6,now.getDate());
 var limS=lim.getFullYear()+'-'+String(lim.getMonth()+1).padStart(2,'0')+'-'+String(lim.getDate()).padStart(2,'0');var tdS=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
 var td0=new Date(now.getFullYear(),now.getMonth(),now.getDate());var wLim=new Date(now.getFullYear(),now.getMonth()+2,now.getDate());
 var dSince=function(ds){if(!ds)return -1;return Math.round((td0-new Date(ds+'T00:00:00'))/86400000)};
+var rpDB=window.__repairDB||[],rpAL=window.__RP_ALIAS||{},rpNm=window.__rpNorm||function(s){return String(s||'').toLowerCase()};
+var rpModelNorm=function(model){return String(model||'').split(/[\s　]+/).filter(Boolean).map(function(tk){var low=tk.toLowerCase();var base=rpAL[low];if(!base){var mm=low.match(/^([a-z]+)(\d.*)$/);if(mm&&rpAL[mm[1]])base=rpAL[mm[1]]+mm[2]}return rpNm(base||tk)}).join('')};
+var rpEndOf=function(model){var cm=rpModelNorm(model);if(!cm)return null;var best=null;rpDB.forEach(function(r){var nn=rpNm(r.n);if(!nn)return;if(cm.indexOf(nn)>=0||nn.indexOf(cm)>=0){if(!best||nn.length>best._l)best={e:r.e,_l:nn.length}}});if(!best)return null;var pp=best.e.split('.').map(Number);return{diff:(pp[0]*12+pp[1])-(now.getFullYear()*12+now.getMonth()+1)}};
 D.cs.forEach(function(c){var follow=false;(c.loans||[]).forEach(function(l){if(!l.done&&(l.date||l.model||l.no||l.noR||l.noL))loans++;if(!l.done&&l.due&&l.due<tdS){due++;follow=true}});(c.reqs||[]).forEach(function(r){if(['受付','発送済','修理中','完了'].indexOf(r.st||'')>=0){rep++;if(dSince(r.date)>=14)follow=true}});(c.orders||[]).forEach(function(o){if(['注文中','お渡し前'].indexOf(o.st||'')>=0){ord++;follow=true}});
-var lv='';(c.visits||[]).forEach(function(v){if(v.date&&v.date>lv)lv=v.date});if(lv&&lv<=limS)follow=true;if((c.next||'').trim())follow=true;if(follow)stale++;if((c.ha||[]).some(function(hh){if(!hh.wr)return false;var d=new Date(hh.wr+'T00:00:00');return d>=td0&&d<=wLim}))war++});
+var lv='';(c.visits||[]).forEach(function(v){if(v.date&&v.date>lv)lv=v.date});if(lv&&lv<=limS)follow=true;if((c.next||'').trim())follow=true;var rf=null;(c.ha||[]).forEach(function(hh){['R','L'].forEach(function(ee){var rr=rpEndOf(hh&&hh[ee]&&hh[ee].model);if(rr&&(!rf||rr.diff<rf.diff))rf=rr})});if(rf&&rf.diff<=6){repEnd++;follow=true}if(follow)stale++;if((c.ha||[]).some(function(hh){if(!hh.wr)return false;var d=new Date(hh.wr+'T00:00:00');return d>=td0&&d<=wLim}))war++});
 var b1=document.getElementById('dashLoan');if(b1&&loans>0){b1.textContent='貸出中 '+loans+'件';b1.style.display='inline-block'}
 var b2=document.getElementById('dashStale');if(b2&&stale>0){b2.textContent='対象 '+stale+'名';b2.style.display='inline-block'}
 var b3=document.getElementById('dashRep');if(b3&&rep>0){b3.textContent='修理対応中 '+rep+'件';b3.style.display='inline-block'}
 var b4=document.getElementById('dashDue');if(b4&&due>0){b4.textContent='貸出期限超過 '+due+'件';b4.style.display='inline-block'}
 var b5=document.getElementById('dashOrd');if(b5&&ord>0){b5.textContent='注文対応中 '+ord+'件';b5.style.display='inline-block'}
 var b6=document.getElementById('dashWar');if(b6&&war>0){b6.textContent='保証間近 '+war+'名';b6.style.display='inline-block';b6.style.cursor='pointer';b6.onclick=function(ev){ev.preventDefault();ev.stopPropagation();try{localStorage.setItem('njhc_cust_filter','warranty')}catch(e){}location.href='./customer.html'}}
+var b7=document.getElementById('dashRepair');if(b7&&repEnd>0){b7.textContent='修理終了間近 '+repEnd+'名';b7.style.display='inline-block';b7.style.cursor='pointer';b7.onclick=function(ev){ev.preventDefault();ev.stopPropagation();try{localStorage.setItem('njhc_cust_filter','repair')}catch(e){}location.href='./customer.html'}}
 }catch(e){}}
 var f=document.getElementById('quickFollow');if(f)f.addEventListener('click',function(){try{localStorage.setItem('njhc_cust_filter','stale')}catch(e){}location.href='./customer.html'});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',cnt);else cnt();

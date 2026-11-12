@@ -970,7 +970,7 @@ img,canvas,table{max-width:100%}
 .today-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .stat{background:#fff;border:1px solid #e7e4da;border-radius:16px;box-shadow:0 4px 14px rgba(24,50,38,.05);padding:12px 6px 10px;text-align:center}
 .stat b{display:block;font-size:25px;font-variant-numeric:tabular-nums;line-height:1.15}
-.stat b.unit{font-size:12px;font-weight:700;margin-left:1px}
+.stat b .unit{font-size:12px;font-weight:700;margin-left:1px}
 .stat.a b{color:#0a4630}.stat.b b{color:#c2571b}.stat.c b{color:#b3261e}
 .stat small{color:#77817a;font-size:11.5px;font-weight:600}
 .dash{gap:10px}
@@ -997,9 +997,9 @@ img,canvas,table{max-width:100%}
     </div>
     <div class="sec-label">TODAY<span>本日の状況</span></div>
     <div class="today-grid">
-        <div class="stat a"><b id="stRsv">–</b><small>本日の予約</small></div>
-        <div class="stat b"><b id="stFollow">–</b><small>フォロー対象</small></div>
-        <div class="stat c"><b id="stOrd">–</b><small>注文対応中</small></div>
+        <div class="stat a" style="cursor:pointer" onclick="try{localStorage.setItem('njhc_open_cal','1')}catch(e){};location.href='./customer.html'"><b id="stRsv">–</b><small>本日の予約 ›</small></div>
+        <div class="stat b" style="cursor:pointer" onclick="try{localStorage.setItem('njhc_cust_filter','stale')}catch(e){};location.href='./customer.html'"><b id="stFollow">–</b><small>フォロー対象 ›</small></div>
+        <div class="stat c" style="cursor:pointer" onclick="try{localStorage.setItem('njhc_cust_filter','oactive')}catch(e){};location.href='./customer.html'"><b id="stOrd">–</b><small>注文対応中 ›</small></div>
     </div>
     <div class="sec-label">MENU<span>メニュー</span></div>
 
@@ -1103,7 +1103,7 @@ img,canvas,table{max-width:100%}
     <div class="footer-note">
         リンク先：<a href="https://www.njha.co.jp/dealers/" target="_blank" rel="noopener">NJH 販売店向け資料ページ</a>
     </div>
-    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v79</div>
+    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v80</div>
 </div>
 
 <!-- パーツ注文リスト -->

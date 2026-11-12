@@ -16,16 +16,16 @@
     <title>NJHシステム</title>
     <style>
         :root {
-            --primary: #1a365d;
-            --primary-light: #2b6cb0;
-            --accent: #3182ce;
-            --bg: #f0f4f8;
+            --primary: #0a4630;
+            --primary-light: #0e6b47;
+            --accent: #0e6b47;
+            --bg: #f6f5f1;
             --card: #ffffff;
-            --text: #1a202c;
-            --muted: #718096;
-            --border: #e2e8f0;
+            --text: #1d2621;
+            --muted: #6f7a70;
+            --border: #e3ded0;
             --success: #38a169;
-            --hover: #2c5282;
+            --hover: #083d27;
             --beltone: #2b6cb0;
             --beltone-bg: #ebf8ff;
             --beltone-bg2: #e3f2ff;
@@ -43,7 +43,7 @@
         }
         body {
             font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
-            background: linear-gradient(160deg, #e8f0fe 0%, #f0f4f8 50%, #edf2f7 100%);
+            background: linear-gradient(160deg, #edeade 0%, #f6f5f1 55%, #f1eee3 100%);
             color: var(--text);
             min-height: 100vh;
             padding: 24px 16px;
@@ -54,9 +54,9 @@
             margin: 0 auto;
             background: var(--card);
             padding: 36px 32px;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(26, 54, 93, 0.08), 0 2px 8px rgba(0,0,0,0.04);
-            border-top: 5px solid var(--primary);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(24, 50, 38, 0.10), 0 2px 8px rgba(0,0,0,0.04);
+            border-top: 5px solid #c9a86a;
         }
         h1 {
             font-size: 1.5rem;
@@ -554,20 +554,21 @@
             font-family: inherit;
             text-align: left;
             cursor: pointer;
-            box-shadow: 0 4px 14px rgba(26, 54, 93, 0.18);
+            box-shadow: 0 4px 14px rgba(24, 50, 38, 0.16);
             transition: transform 0.15s, box-shadow 0.15s;
         }
-        .quick-card:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(26, 54, 93, 0.25); }
+        .quick-card:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(24, 50, 38, 0.22); }
         .quick-card .q-ico { font-size: 1.5rem; line-height: 1; }
         .quick-card b { font-size: 1rem; }
         .quick-card small { font-size: 0.78rem; opacity: 0.92; line-height: 1.4; }
-        .quick-order { background: linear-gradient(135deg, #0a8f48, #2b8a6e); }
-        .quick-parts { background: linear-gradient(135deg, #2b6cb0, #1a365d); }
+        .quick-order { background: linear-gradient(135deg, #0a4630, #2b8a6e); }
+        .quick-parts { background: linear-gradient(135deg, #3f5a52, #5c7a6e); }
         .dash { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0 0 26px; }
         @media (min-width: 1025px) { .dash { grid-template-columns: repeat(3, 1fr); } }
         .dash .quick-card { min-height: 104px; width: 100%; }
-        .quick-follow { background: linear-gradient(135deg, #6b46c1, #553c9a); }
-        .quick-dealer { background: linear-gradient(135deg, #4a5568, #2d3748); }
+        .quick-follow { background: linear-gradient(135deg, #8a6d2f, #b08d3e); }
+        .quick-dealer { background: linear-gradient(135deg, #4c554e, #333d36); }
+        .quick-cal { background: linear-gradient(135deg, #0e6b47, #12a35c); }
         .dash-badge { display: none; background: #fff; color: #b03a1b; border-radius: 999px; padding: 1px 9px; font-weight: 700; font-size: 0.78rem; margin-left: 4px; white-space: nowrap; }
         @media (max-width: 480px) { .quick-row { grid-template-columns: 1fr; } }
         #answerText a.in-app::after { content: "›"; font-size: 1.1em; opacity: 0.8; }
@@ -966,7 +967,8 @@ img,canvas,table{max-width:100%}
     <div class="subtitle">Beltone / Unitron 書類・マニュアル検索（NJH連携）</div>
 
     <div class="dash">
-        <a class="quick-card" href="./customer.html" style="background:linear-gradient(135deg,#1a365d,#2b6cb0)"><span class="q-ico">📋</span><b>顧客管理 <span class="dash-badge" id="dashLoan"></span><span class="dash-badge" id="dashRep"></span><span class="dash-badge" id="dashOrd"></span><span class="dash-badge" id="dashWar"></span><span class="dash-badge" id="dashRepair"></span></b><small>検索・登録・履歴<br>顧客・聴力・補聴器記録 → 注文書へ自動入力</small></a>
+        <a class="quick-card" href="./customer.html" style="background:linear-gradient(135deg,#083d27,#0e6b47)"><span class="q-ico">📋</span><b>顧客管理 <span class="dash-badge" id="dashLoan"></span><span class="dash-badge" id="dashRep"></span><span class="dash-badge" id="dashOrd"></span><span class="dash-badge" id="dashWar"></span><span class="dash-badge" id="dashRepair"></span></b><small>検索・登録・履歴<br>顧客・聴力・補聴器記録 → 注文書へ自動入力</small></a>
+        <a class="quick-card quick-cal" href="./customer.html" onclick="try{localStorage.setItem('njhc_open_cal','1')}catch(e){}"><span class="q-ico">🗓</span><b>予約カレンダー <span class="dash-badge" id="dashRsv"></span></b><small>店全体の予約・本日の予約<br>顧客の次回予約をまとめて表示</small></a>
         <a class="quick-card quick-order" href="./order/index.html" id="quickHaOrder">
             <span class="q-ico">✍️</span>
             <b>補聴器の注文書を作成</b>
@@ -993,6 +995,8 @@ img,canvas,table{max-width:100%}
             <small>最新の様式・お知らせ<br>NJH公式サイト</small>
         </a>
     </div>
+
+    <div id="todayRsv" style="display:none;margin:-6px 0 26px;background:#fff;border:1px solid #e7e4da;border-radius:16px;box-shadow:0 6px 18px rgba(24,50,38,.06);padding:14px 16px"></div>
 
     <div class="step" id="step1">
         <h2><span class="step-num">1</span> お困り事はなんですか？</h2>
@@ -1061,7 +1065,7 @@ img,canvas,table{max-width:100%}
     <div class="footer-note">
         リンク先：<a href="https://www.njha.co.jp/dealers/" target="_blank" rel="noopener">NJH 販売店向け資料ページ</a>
     </div>
-    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v75</div>
+    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v76</div>
 </div>
 
 <!-- パーツ注文リスト -->
@@ -3048,5 +3052,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 <script>window.addEventListener('pageshow',function(e){if(e.persisted)location.reload()});</script>
+<script>
+(function(){try{var D=JSON.parse(localStorage.getItem('njhc')||'null');if(!D||!D.cs)return;var now=new Date();var td=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');var list=[];D.cs.forEach(function(c){if(c.rsv&&c.rsv.date===td)list.push({id:c.id,name:c.name||'（未入力）',time:c.rsv.time||'',kind:c.rsv.kind||'',note:c.rsv.note||''})});list.sort(function(a,b){return (a.time||'99:99').localeCompare(b.time||'99:99')});var b=document.getElementById('dashRsv');if(b&&list.length){b.textContent='本日 '+list.length+'件';b.style.display='inline-block'}var p=document.getElementById('todayRsv');if(p&&list.length){var wd='日月火水木金土'[now.getDay()];var esc2=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(ch){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]})};p.innerHTML='<b style="color:#0a4630">🗓 本日の予約（'+(now.getMonth()+1)+'/'+now.getDate()+'・'+wd+'）― '+list.length+'件</b>'+list.map(function(r){return '<div onclick="try{localStorage.setItem(\'njh_open_cust\',JSON.stringify({id:'+r.id+',tab:\'b\'}))}catch(e){};location.href=\'./customer.html\'" style="display:flex;gap:10px;align-items:center;padding:8px 2px;border-bottom:1px solid #f0efe8;cursor:pointer"><span style="font-weight:900;color:#0a4630;font-variant-numeric:tabular-nums;width:44px;flex:none">'+(r.time||'—')+'</span><span style="flex:1"><b>'+esc2(r.name)+' 様</b>'+(r.note?' <small style="color:#77817a">'+esc2(r.note)+'</small>':'')+'</span>'+(r.kind?'<span style="font-size:10px;font-weight:700;background:#e9f2ec;color:#0a4630;border-radius:6px;padding:2px 7px;flex:none">'+esc2(r.kind)+'</span>':'')+'</div>'}).join('');p.style.display='block'}}catch(e){}})();
+</script>
 </body>
 </html>

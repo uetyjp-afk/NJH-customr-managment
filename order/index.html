@@ -92,7 +92,7 @@ header h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @keyframes moldBlink{0%,100%{opacity:1}50%{opacity:.4}}
 .moldBack{display:block;width:100%;margin:8px 0;padding:11px 12px;border:2px solid #1d4e89;border-radius:10px;background:#fff;color:#1d4e89;font-size:15px;font-weight:700;cursor:pointer}
 </style></head><body>
-<header><button class="back" id="back" hidden>‹ 戻る</button><h1 id="ttl">NJH 補聴器 ご注文書 作成</h1><nav class="hnav"><button type="button" id="topNew" style="border:0;color:#fff;background:#a5813f;border-radius:14px;padding:6px 9px;font-size:12px;white-space:nowrap">＋ 新規注文（最初から）</button><a href="../index.html" style="background:#0a4630;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap">🏠 ホームに戻る</a><a href="../customer.html" onclick="try{var c=new URLSearchParams(location.search).get('cid')||(typeof PRE!=='undefined'&&PRE?PRE.cid:null);if(c)localStorage.setItem('njh_open_cust',JSON.stringify({id:c,tab:'o'}))}catch(e){}" style="background:#0e6b47;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap;margin-left:8px">💾 顧客管理へ移動</a><a href="../index.html#cart" id="navParts">🔩 パーツ注文</a><a href="../index.html#repair">🔧 修理可否</a><span style="font-size:11px;opacity:.7;margin-left:8px">v59</span></nav></header>
+<header><button class="back" id="back" hidden>‹ 戻る</button><h1 id="ttl">NJH 補聴器 ご注文書 作成</h1><nav class="hnav"><button type="button" id="topNew" style="border:0;color:#fff;background:#a5813f;border-radius:14px;padding:6px 9px;font-size:12px;white-space:nowrap">＋ 新規注文（最初から）</button><a href="../index.html" style="background:#0a4630;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap">🏠 ホームに戻る</a><a href="../customer.html" onclick="try{var c=new URLSearchParams(location.search).get('cid')||(typeof PRE!=='undefined'&&PRE?PRE.cid:null);if(c)localStorage.setItem('njh_open_cust',JSON.stringify({id:c,tab:'o'}))}catch(e){}" style="background:#0e6b47;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap;margin-left:8px">💾 顧客管理へ移動</a><a href="../index.html#cart" id="navParts">🔩 パーツ注文</a><a href="../index.html#repair">🔧 修理可否</a><span style="font-size:11px;opacity:.7;margin-left:8px">v60</span></nav></header>
 <main>
 <section id="v1"><p class="note" style="text-align:center;margin-top:20px">メーカーを選んでください</p><div class="tiles" id="tiles"></div></section>
 <section id="v2" hidden><div class="list" id="list"></div></section>
@@ -304,7 +304,7 @@ function openForm(f){
   if(PRE.au&&(f.audio||f.autab)){const mp=s=>{const o={};Object.keys((f.audio||f.autab).x).forEach(fr=>{const v=s?s[fr]:'';if(v!==''&&v!=null)o[fr]=v});return o};ST.au={R:mp(PRE.au.ac&&PRE.au.ac.R),L:mp(PRE.au.ac&&PRE.au.ac.L)};ST.auBC={R:mp(PRE.au.bc&&PRE.au.bc.R),L:mp(PRE.au.bc&&PRE.au.bc.L)}}if(PRE.sex){ST.gender=PRE.sex;document.querySelectorAll('#gender input').forEach(i=>{i.checked=i.value===PRE.sex;i.dataset.on=i.checked?'1':''})}}
   FM.groups.forEach(g=>{if(g.auto&&showG(g)){ST[g.id+'R']=ST[g.id+'R']||g.auto;ST[g.id+'L']=ST[g.id+'L']||g.auto}});
   $('fax').closest('div').style.display=(f.mold||f.emold)?'none':'';$('age').closest('.row').style.display=f.mold?'none':'';buildAu();
-  ready=false;cv.width=f.size[0];cv.height=f.size[1];IMG=new Image();IMG.onload=()=>{ready=true;refresh();upd();saveHaDraft();if(VIEWOPEN)applyView()};IMG.src=BGMAP[f.id];$('v3').hidden=false;window.scrollTo(0,0)
+  ready=false;cv.width=f.size[0];cv.height=f.size[1];IMG=new Image();IMG.onload=()=>{ready=true;refresh();upd();saveHaDraft();try{dbBase()}catch(e){}if(VIEWOPEN)applyView()};IMG.src=BGMAP[f.id];$('v3').hidden=false;window.scrollTo(0,0)
 }
 TXT.forEach(k=>$(k).addEventListener('input',()=>{if(KEEP.includes(k))ls.set('njh_'+k,$(k).value);saveHaDraft();upd()}));
 /* ---------- draw ---------- */
@@ -444,7 +444,7 @@ $('bPdf').onclick=async()=>{
   try{
     const kind=await choosePdfKind();if(!kind)return;
     if(kind==='ha'){
-      if(!ensureDrawn())return;dl(pdf(),fname()+'.pdf');toast('補聴器PDFを保存しました');return;
+      if(!ensureDrawn())return;dl(pdf(),fname()+'.pdf');toast('補聴器PDFを保存しました');autoDbSave();return;
     }
     const lines=readPartsCart();
     if(kind==='parts'){
@@ -454,7 +454,7 @@ $('bPdf').onclick=async()=>{
     if(!ensureDrawn())return;
     if(!lines.length){toast('補聴器とパーツ・備品の両方を入力してください');return;}
     partsPdfBlob(lines);const combined=await imagePdf([cv.toDataURL('image/jpeg',0.92),partsPdfBlob.img]);
-    dl(combined,fname()+'_補聴器_備品_2ページ.pdf');toast('2ページPDFを保存しました');
+    dl(combined,fname()+'_補聴器_備品_2ページ.pdf');toast('2ページPDFを保存しました');autoDbSave();
   }catch(e){console.error(e);toast('PDFの作成に失敗しました：'+((e&&e.message)||e))}
 };
 $('bPng').onclick=()=>{
@@ -476,6 +476,7 @@ $('bPng').onclick=()=>{
 };
 $('bPrint').onclick=()=>{
   try{if(!ensureDrawn())return;window.print()}catch(e){}
+  autoDbSave();
   toast('印刷画面が開かない場合は「PDF保存」からお使いください')
 };
 $('bMail').onclick=async()=>{
@@ -487,10 +488,12 @@ $('bMail').onclick=async()=>{
     try{
       if(navigator.canShare&&navigator.canShare({files:[file]})){
         await navigator.share({files:[file],title:sub,text:body});
+        autoDbSave();
         return
       }
     }catch(e){if(e&&e.name==='AbortError')return}
     dl(blob,n+'.pdf');
+    autoDbSave();
     toast('PDFを保存しました。メールソフトを開きます');
     setTimeout(()=>{
       openMailto($('mailTo').value,sub,body);
@@ -508,10 +511,12 @@ $('bSharePdf').onclick=async()=>{
       if(navigator.canShare&&navigator.canShare({files:[file]})){
         toast('共有先を選んでください（LINE・メールなど）');
         await navigator.share({files:[file],title:sub,text:body});
+        autoDbSave();
         return;
       }
     }catch(e){if(e&&e.name==='AbortError')return}
     dl(blob,n+'.pdf');
+    autoDbSave();
     toast('PDFを保存しました。LINEやメールに添付して送ってください');
   }catch(e){console.error(e);toast('PDFの作成に失敗しました：'+((e&&e.message)||e))}
 };
@@ -667,19 +672,19 @@ $('bBoth').onclick=async()=>{
     $('cfPrint').textContent='補聴器と備品を印刷';
     const okSend=await confirmSend('この内容で送りますか？',($('shop').value||'貴店名未入力')+'　／　2ページPDF（補聴器＋パーツ・備品 '+lines.length+'品目）',items);
     if(!okSend)return;
-    if(okSend==='print'){printPreviewItems(items);return}
+    if(okSend==='print'){printPreviewItems(items);autoDbSave();return}
     const sub=`【ご注文】補聴器${lines.length?'＋備品':''} ${FM.name}`;
     const body=`${$('shop').value||''}です。補聴器注文書と備品注文書を2ページPDFで送ります。`;
-    if(okSend==='manual'){if(await manualSend(files,sub,body,$('mailTo').value))recordHistoryRaw();return}
+    if(okSend==='manual'){if(await manualSend(files,sub,body,$('mailTo').value)){recordHistoryRaw();autoDbSave()}return}
     try{
       if(navigator.canShare&&navigator.canShare({files})){
         toast('共有先を選んでください（2ページPDF）');
         await navigator.share({files,title:sub,text:body});
-        recordHistoryRaw();
+        recordHistoryRaw();autoDbSave();
         return;
       }
     }catch(e){if(e&&e.name==='AbortError')return}
-    if(await manualSend(files,sub,body,$('mailTo').value))recordHistoryRaw();
+    if(await manualSend(files,sub,body,$('mailTo').value)){recordHistoryRaw();autoDbSave()}
   }catch(e){console.error(e);toast('まとめ送信に失敗しました：'+((e&&e.message)||e))}
 };
 $('bMold').onclick=async()=>{
@@ -697,30 +702,32 @@ $('bMold').onclick=async()=>{
     $('cfPrint').textContent='補聴器とモールドを印刷';
     const okSend=await confirmSend('この内容で送りますか？',($('shop').value||'貴店名未入力')+'　／　2ページPDF（補聴器＋'+mLbl+'）',items);
     if(!okSend)return;
-    if(okSend==='print'){printPreviewItems(items);return}
+    if(okSend==='print'){printPreviewItems(items);autoDbSave();return}
     const sub='【ご注文】補聴器＋'+mLbl;
     const body=($('shop').value||'')+'です。補聴器注文書と'+mLbl+'注文書を2ページPDFで送ります。';
-    if(okSend==='manual'){await manualSend(files,sub,body,$('mailTo').value);return}
+    if(okSend==='manual'){await manualSend(files,sub,body,$('mailTo').value);autoDbSave();return}
     try{
       if(navigator.canShare&&navigator.canShare({files})){
         toast('共有先を選んでください（2ページPDF）');
         await navigator.share({files,title:sub,text:body});
+        autoDbSave();
         return;
       }
     }catch(e){if(e&&e.name==='AbortError')return}
-    await manualSend(files,sub,body,$('mailTo').value);
+    await manualSend(files,sub,body,$('mailTo').value);autoDbSave();
   }catch(e){console.error(e);toast('まとめ送信に失敗しました：'+((e&&e.message)||e))}
 };
 // パーツ注文へ行く前に下書き保存
 const navParts=$('navParts');
 if(navParts)navParts.addEventListener('click',async e=>{
-  e.preventDefault();saveHaDraft();
+  e.preventDefault();if(await askDbSave())doDbSave(true);saveHaDraft();
   const href=navParts.getAttribute('href');
   try{await Promise.race([snapHa(),new Promise(r=>setTimeout(r,2500))])}catch(_){}
   location.href=href;
 });
 addEventListener('pagehide',()=>saveHaDraft());
-addEventListener('beforeunload',()=>saveHaDraft());
+addEventListener('beforeunload',e=>{saveHaDraft();if(dbNeedAsk()){e.preventDefault();e.returnValue=''}});
+document.querySelectorAll('header .hnav a[href^="../"]').forEach(a=>{if(a.id==='navParts')return;a.addEventListener('click',async e=>{if(!dbNeedAsk())return;e.preventDefault();const href=a.getAttribute('href');if(await askDbSave())doDbSave(true);location.href=href})});
 
 function startNewOrder(){
   if(!confirm('お客様情報も選択内容も全部消して、新しい注文を最初から始めます（店名だけ残ります）。入力中の内容は下書きとして残るので、後から戻れます。'))return;
@@ -733,11 +740,30 @@ function startNewOrder(){
 }
 $('bNew').onclick=startNewOrder;
 $('topNew').onclick=startNewOrder;
-$('bDb').onclick=()=>{try{const qp=new URLSearchParams(location.search);const cid=qp.get('cid')||(PRE&&PRE.cid)||null;
-if(!cid){dbMsg('保存できません','顧客管理の顧客画面から開いた注文書だけ、履歴に保存できます。保存した注文は、顧客管理の「注文」タブと、この注文書の「注文履歴」ボタンで見られます。');return}
-saveHaDraft();const dr=loadHaDraft(FM.id);if(!dr){dbMsg('保存できません','保存する内容がありません。入力を確認してください。');return}
+/* ---- データベース自動保存・離脱時の保存確認 ---- */
+let _openSig=null,_dbSig=null;
+function dbCid(){try{const qp=new URLSearchParams(location.search);return qp.get('cid')||(PRE&&PRE.cid)||null}catch(e){return null}}
+function sigOfDr(dr){if(!dr)return '';return JSON.stringify({s:dr.ST,f:dr.fields,g:dr.gender||'',x:dr.dx,y:dr.dy})}
+function dbSigNow(){try{saveHaDraft();return sigOfDr(loadHaDraft(FM.id))}catch(e){return ''}}
+function dbHasContent(){try{const dr=loadHaDraft(FM.id);if(!dr)return false;const f=dr.fields||{};if(f.name||f.kana||f.age||f.note)return true;return Object.keys(dr.ST||{}).some(k=>{const v=dr.ST[k];return Array.isArray(v)?v.length:!!v})}catch(e){return false}}
+function dbUnsaved(){if(!FM||VIEWOPEN||!dbCid())return false;const s=dbSigNow();if(!s||!dbHasContent())return false;return s!==_dbSig}
+function dbNeedAsk(){return dbUnsaved()&&dbSigNow()!==_openSig}
+function dbBase(){const s=dbSigNow();_openSig=s;try{const qp=new URLSearchParams(location.search);const oid=qp.get('oid')||(PRE&&PRE.oid);_dbSig=oid?s:null}catch(e){_dbSig=null}}
+function autoDbSave(){try{if(!dbUnsaved())return;doDbSave(true)}catch(e){}}
+function askDbSave(){return new Promise(res=>{if(!dbNeedAsk()){res(false);return}
+const old=document.getElementById('dbAskModal');if(old)old.remove();
+const ov=document.createElement('div');ov.id='dbAskModal';ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:330;display:flex;align-items:center;justify-content:center;padding:14px';
+ov.innerHTML='<div style="background:#fff;border-radius:14px;padding:18px;width:100%;max-width:420px"><b style="font-size:16px">データベースに保存しますか？</b><p style="margin:10px 0;font-size:14px;line-height:1.6">保存しないと、この注文は顧客管理の注文履歴に残りません。（入力内容の下書きは、この端末には残ります）</p><div style="display:flex;gap:8px"><button type="button" data-a="yes" style="flex:1;padding:11px;border-radius:8px;border:0;background:#1d4e89;color:#fff;font-weight:700">保存する</button><button type="button" data-a="no" style="flex:1;padding:11px;border-radius:8px;border:1px solid #bbb;background:#fff">保存しない</button></div></div>';
+document.body.appendChild(ov);
+ov.querySelector('[data-a=yes]').onclick=()=>{ov.remove();res(true)};
+ov.querySelector('[data-a=no]').onclick=()=>{ov.remove();res(false)};
+})}
+function doDbSave(auto){try{const say=(t,x)=>{if(auto){if(t==='保存しました')toast('データベースに保存しました')}else dbMsg(t,x)};
+const qp=new URLSearchParams(location.search);const cid=qp.get('cid')||(PRE&&PRE.cid)||null;
+if(!cid){say('保存できません','顧客管理の顧客画面から開いた注文書だけ、履歴に保存できます。保存した注文は、顧客管理の「注文」タブと、この注文書の「注文履歴」ボタンで見られます。');return}
+saveHaDraft();const dr=loadHaDraft(FM.id);if(!dr){say('保存できません','保存する内容がありません。入力を確認してください。');return}
 let db=null;try{db=JSON.parse(localStorage.getItem('njhc')||'null')}catch(e){}
-const cu=db&&db.cs.find(x=>String(x.id)===String(cid));if(!cu){dbMsg('保存できません','顧客管理に該当の顧客が見つかりませんでした。');return}
+const cu=db&&db.cs.find(x=>String(x.id)===String(cid));if(!cu){say('保存できません','顧客管理に該当の顧客が見つかりませんでした。');return}
 cu.orders=cu.orders||[];
 const oid=qp.get('oid')||(PRE&&PRE.oid)||null;
 const mdl=(()=>{let ears='';FM.groups.forEach(g=>{if(g.t!=='ear')return;const r=!!ST[g.id+'R'],l=!!ST[g.id+'L'];if(r&&l)ears='B';else if(r)ears='R';else if(l)ears='L'});if(ST.earsel)ears=ST.earsel;ears=ears||'B';
@@ -773,9 +799,10 @@ let transferred=false;
 const rec={id:oid?+oid:Date.now(),app:'main',date:((dr.fields&&dr.fields.orderDate)||'').replace(/-/g,'/'),formId:FM.id,formName:FM.name,cust:(dr.fields&&dr.fields.name)||cu.name||'',summary:((dr.fields&&dr.fields.name)||'')+' 様',data:dr,model:mdl.model,ears:mdl.ears,savedAt:Date.now()};
 const ix=cu.orders.findIndex(x=>String(x.id)===String(rec.id));if(ix>=0){rec.st=cu.orders[ix].st||'注文中';if(cu.orders[ix].haIdx!=null)rec.haIdx=cu.orders[ix].haIdx}else{rec.st='注文中'}if(ix>=0)cu.orders[ix]=rec;else cu.orders.push(rec);
 if((Object.keys(tData.R).length||Object.keys(tData.L).length)&&(gRc||gLen||gEar||mdl.model!==FM.name)){cu.ha=cu.ha||[];let hi=(rec.haIdx!=null&&cu.ha[rec.haIdx])?rec.haIdx:-1;if(hi<0){const blankE=E=>E&&!E.model&&!E.no;const bi=cu.ha.findIndex(H2=>H2&&!H2.buy&&blankE(H2.R)&&blankE(H2.L));if(bi>=0){hi=bi}else{const nE=()=>({model:'',no:'',vol:'',rc:'',tube:'',ear:'',bat:'',extra:[]});cu.ha.push({buy:'',wr:'',wrY:'',lg:'',lgY:'',lgN:'',lgExp:'',lgAmt:'',extra:[],R:nE(),L:nE()});hi=cu.ha.length-1}rec.haIdx=hi}const H=cu.ha[hi];if(!H.buy&&rec.date)H.buy=rec.date.replace(/\//g,'-');const apE=(E,d)=>{if(!E||!Object.keys(d).length)return;if(d.model)E.model=d.model;if(d.rc)E.rc=d.rc;if(d.tube)E.tube=d.tube;if(d.ear)E.ear=d.ear;if(d.rcRaw){E.extra=E.extra||[];if(!E.extra.some(x=>x.k==='レシーバー種類'))E.extra.push({k:'レシーバー種類',v:d.rcRaw})}};if(mdl.ears==='B'||mdl.ears==='R')apE(H.R,tData.R);if(mdl.ears==='B'||mdl.ears==='L')apE(H.L,tData.L);transferred=true}
-try{localStorage.setItem('njhc',JSON.stringify(db))}catch(e){dbMsg('保存できませんでした','端末の容量不足の可能性があります。');return}
+try{localStorage.setItem('njhc',JSON.stringify(db))}catch(e){say('保存できませんでした','端末の容量不足の可能性があります。');return}
 try{let dm={};try{dm=JSON.parse(ls.get('njh_ha_drafts_v1')||'{}')||{}}catch(e){}delete dm[FM.id];ls.set('njh_ha_drafts_v1',JSON.stringify(dm));const dd=JSON.parse(ls.get('njh_ha_draft_v1')||'null');if(dd&&dd.formId===FM.id)localStorage.removeItem('njh_ha_draft_v1')}catch(e){}if(PRE){PRE.oid=String(rec.id);PRE.cid=String(cid)}if(!oid){qp.set('oid',rec.id);history.replaceState(null,'',location.pathname+'?'+qp.toString()+location.hash)}
-dbMsg('保存しました',(cu.name||'')+' 様の注文履歴に登録しました。'+(transferred?'補聴器の記録（機種名・レシーバー種類・長さ・耳栓）にも転記しました。':''))}catch(e){console.error(e);dbMsg('エラー','保存中にエラーが発生しました：'+((e&&e.message)||e))}};
+_dbSig=sigOfDr(dr);say('保存しました',(cu.name||'')+' 様の注文履歴に登録しました。'+(transferred?'補聴器の記録（機種名・レシーバー種類・長さ・耳栓）にも転記しました。':''))}catch(e){console.error(e);say('エラー','保存中にエラーが発生しました：'+((e&&e.message)||e))}}
+$('bDb').onclick=()=>doDbSave(false);
 let VIEWOPEN=false;try{const qp=new URLSearchParams(location.search);const op=qp.get('open')||(PRE&&PRE.open),oid=qp.get('oid')||(PRE&&PRE.oid),cid=qp.get('cid')||(PRE&&PRE.cid);
 if((qp.get('view')||(PRE&&PRE.view))==='1')VIEWOPEN=true;
 if(op){if(oid&&cid){try{const db=JSON.parse(localStorage.getItem('njhc')||'null');const cu=db&&db.cs.find(x=>String(x.id)===String(cid));const rec=cu&&(cu.orders||[]).find(x=>String(x.id)===String(oid));if(rec&&rec.data){let m={};try{m=JSON.parse(ls.get('njh_ha_drafts_v1')||'{}')||{}}catch(e){}m[rec.formId]=rec.data;ls.set('njh_ha_drafts_v1',JSON.stringify(m));ls.set('njh_ha_draft_v1',JSON.stringify(rec.data));if(PRE)PRE.done[rec.formId]=1}}catch(e){}}

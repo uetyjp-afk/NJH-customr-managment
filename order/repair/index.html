@@ -212,23 +212,41 @@ async function build(){const f=FORMS[V.form];const{PDFDocument}=PDFLib;const doc
  if(V.form==='repair')await add(await jpegBlobOf(f.bg1));
  await add(await new Promise(r=>cv.toBlob(r,'image/jpeg',0.92)));
  return new Blob([await doc.save()],{type:'application/pdf'})}
-$('#dl').onclick=async()=>{try{const b=await build();const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=FORMS[V.form].file+'_'+(V.common.cust||'依頼書')+'.pdf';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}catch(e){alert('PDFを作成できませんでした')}};
-function dbSaveReq(){if(!CID){alert('顧客管理の顧客画面から開くと、履歴に保存できます。');return false}
+$('#dl').onclick=async()=>{try{const b=await build();const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=FORMS[V.form].file+'_'+(V.common.cust||'依頼書')+'.pdf';a.click();autoDbSaveR();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}catch(e){alert('PDFを作成できませんでした')}};
+/* ===== データベース自動保存・離脱時の保存確認 ===== */
+let _openSigR=null,_dbSigR=null;
+function dbSigR(){try{return JSON.stringify(V)}catch(e){return ''}}
+function dbUnsavedR(){if(!CID)return false;const s=dbSigR();if(!s)return false;return s!==_dbSigR&&(s!==_openSigR||(_dbSigR!==null&&_dbSigR!==_openSigR))}
+function dbBaseR(){const s=dbSigR();_openSigR=s;_dbSigR=RID?s:null}
+function toastR(msg){let t=document.getElementById('dbToastR');if(!t){t=document.createElement('div');t.id='dbToastR';t.style.cssText='position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#0a4630;color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;z-index:400;box-shadow:0 4px 14px rgba(0,0,0,.25)';document.body.appendChild(t)}t.textContent=msg;t.style.display='';clearTimeout(t._h);t._h=setTimeout(()=>{t.style.display='none'},2600)}
+function autoDbSaveR(){try{if(!dbUnsavedR())return;save();if(dbSaveReq(true))toastR('データベースに保存しました')}catch(e){}}
+function askDbSaveR(){return new Promise(res=>{if(!dbUnsavedR()){res(false);return}
+const old=document.getElementById('dbAskModalR');if(old)old.remove();
+const ov=document.createElement('div');ov.id='dbAskModalR';ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:410;display:flex;align-items:center;justify-content:center;padding:14px';
+ov.innerHTML='<div style="background:#fff;border-radius:14px;padding:18px;width:100%;max-width:420px"><b style="font-size:16px">データベースに保存しますか？</b><p style="margin:10px 0;font-size:14px;line-height:1.6">保存しないと、この依頼書は顧客管理の依頼書履歴に残りません。（入力内容の下書きは、この端末には残ります）</p><div style="display:flex;gap:8px"><button type="button" data-a="yes" style="flex:1;padding:11px;border-radius:8px;border:0;background:#1d4e89;color:#fff;font-weight:700">保存する</button><button type="button" data-a="no" style="flex:1;padding:11px;border-radius:8px;border:1px solid #bbb;background:#fff">保存しない</button></div></div>';
+document.body.appendChild(ov);
+ov.querySelector('[data-a=yes]').onclick=()=>{ov.remove();res(true)};
+ov.querySelector('[data-a=no]').onclick=()=>{ov.remove();res(false)};
+})}
+document.querySelectorAll('a.back').forEach(a=>{a.addEventListener('click',async e=>{if(!dbUnsavedR())return;e.preventDefault();const href=a.getAttribute('href');if(await askDbSaveR()){save();dbSaveReq(true)}location.href=href})});
+addEventListener('beforeunload',e=>{if(dbUnsavedR()){e.preventDefault();e.returnValue=''}});
+function dbSaveReq(auto){if(!CID){if(!auto)alert('顧客管理の顧客画面から開くと、履歴に保存できます。');return false}
 let db=null;try{db=JSON.parse(localStorage.getItem('njhc')||'null')}catch(e){}
-const cu=db&&(db.cs||[]).find(x=>String(x.id)===String(CID));if(!cu){alert('顧客管理に該当の顧客が見つかりませんでした。');return false}
+const cu=db&&(db.cs||[]).find(x=>String(x.id)===String(CID));if(!cu){if(!auto)alert('顧客管理に該当の顧客が見つかりませんでした。');return false}
 cu.reqs=cu.reqs||[];
 const rec={id:RID?+RID:Date.now(),date:(V.form==='repair'?(V.repair&&V.repair.date):(V.loss&&V.loss.date))||'',kind:V.form,formName:V.form==='repair'?'修理依頼書':'紛失保証注文書',summary:((V.common&&V.common.model)||'')+(V.ear==='R'?' 右耳':V.ear==='L'?' 左耳':V.ear==='B'?' 両耳':''),data:JSON.parse(JSON.stringify(V)),savedAt:Date.now()};
 const ix=cu.reqs.findIndex(x=>String(x.id)===String(rec.id));if(ix>=0){rec.st=cu.reqs[ix].st||'受付';rec.fee=cu.reqs[ix].fee||''}else{rec.st='受付';rec.fee=''}if(ix>=0)cu.reqs[ix]=rec;else cu.reqs.push(rec);
-try{localStorage.setItem('njhc',JSON.stringify(db))}catch(e){alert('保存できませんでした（端末の容量不足の可能性があります）');return false}
-RID=rec.id;return true}
+try{localStorage.setItem('njhc',JSON.stringify(db))}catch(e){if(!auto)alert('保存できませんでした（端末の容量不足の可能性があります）');return false}
+RID=rec.id;_dbSigR=dbSigR();return true}
 $('#dbSave').onclick=()=>{save();if(dbSaveReq())alert('保存しました：この顧客の依頼書の履歴に登録しました。')};
 $('#clr').onclick=()=>{if(!confirm('入力内容をクリアしますか？'))return;V={form:V.form,common:defCommon(),repair:defRepair(),loss:defLoss(),haSel:HAS.length-1,ear:'B'};for(const k of['shop','staff','tel','fax','cust'])if(P.get(k))V.common[k]=P.get(k);if(CUST&&!V.common.cust)V.common.cust=CUST.name||'';if(HAS.length&&V.haSel>=0)applyHa();save();render()};
 $('#toCust').onclick=()=>{save();if(CID){if(!dbSaveReq())return;try{localStorage.setItem('njh_open_cust',JSON.stringify({id:CID,tab:'r'}))}catch(e){}}location.href='../../customer.html'};
-$('#pr').onclick=async()=>{try{const b=await build();const u=URL.createObjectURL(b);window.open(u,'_blank')}catch(e){alert('印刷用PDFを作成できませんでした')}};
+$('#pr').onclick=async()=>{try{const b=await build();const u=URL.createObjectURL(b);window.open(u,'_blank');autoDbSaveR();}catch(e){alert('印刷用PDFを作成できませんでした')}};
 let RESTORED=false;
 if(RID){try{const D2=JSON.parse(localStorage.getItem('njhc')||'null');const cu=D2&&CID?(D2.cs||[]).find(x=>String(x.id)===String(CID)):null;const rec=cu&&(cu.reqs||[]).find(x=>String(x.id)===String(RID));if(rec&&rec.data){Object.assign(V,rec.data);RESTORED=true}}catch(e){}}
 if(HAS.length&&V.haSel>=0&&!RESTORED)applyHa();
 render();
+try{dbBaseR()}catch(e){}
 </script>
 <script>
 // 顧客画面の依頼書履歴から開いたときの閲覧モード（用紙のみ表示）

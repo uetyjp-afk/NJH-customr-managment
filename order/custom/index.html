@@ -666,15 +666,16 @@ const body=(V.shop||"")+"です。補聴器注文書と備品注文書を2ペー
 try{
 if(navigator.canShare&&navigator.canShare({files:[file]})){
 await navigator.share({files:[file],title:sub,text:body});
-m.textContent="共有しました："+name;return;
+m.textContent="共有しました："+name;autoDbSaveC();return;
 }
 }catch(e){if(e&&e.name==="AbortError"){m.textContent="";return}}
 const a=el("a",{href:URL.createObjectURL(new Blob([combined],{type:"application/pdf"})),download:name});
 document.body.appendChild(a);a.click();a.remove();
-m.textContent="保存しました："+name+"（LINEやメールに添付して送ってください）";
+m.textContent="保存しました："+name+"（LINEやメールに添付して送ってください）";autoDbSaveC();
 }catch(e){m.textContent="作成できませんでした："+(e.message||e)}
 };
 $("toParts").onclick=async()=>{
+if(await askDbSaveC())doDbSaveC(true);
 save();
 try{await Promise.race([snapCustom(),new Promise(r=>setTimeout(r,2500))])}catch(e){}
 location.href="../../index.html#cart";
@@ -717,24 +718,51 @@ parts.push(EN[V.ears]||"");
 if(V.total)parts.push("合計 "+V.total+"円");
 return parts.filter(Boolean).join("／");
 }
-$("dbSave").onclick=()=>{
+/* ===== データベース自動保存・離脱時の保存確認 ===== */
+let _openSigC=null,_dbSigC=null;
+function dbSigC(){try{return JSON.stringify({f:cur.id,v:V})}catch(e){return ""}}
+function dbLinkedC(){try{return !!findCust(loadDb()).cust}catch(e){return false}}
+function dbUnsavedC(){if(!dbLinkedC())return false;const s=dbSigC();if(!s)return false;return s!==_dbSigC}
+function dbNeedAskC(){if(!dbUnsavedC()||!validateOrder().ok)return false;const s=dbSigC();return s!==_openSigC||(_dbSigC!==null&&_dbSigC!==_openSigC)}
+function dbBaseC(){const s=dbSigC();_openSigC=s;_dbSigC=OID?s:null}
+function doDbSaveC(auto){
 const m=$("msg");
 const chk=validateOrder();
-if(!chk.ok){m.textContent=chk.message;return}
+if(!chk.ok){if(!auto)m.textContent=chk.message;return false}
+const r=dbSaveCore();
+if(!r||r.err){if(!auto)m.textContent=(!r||r.err==="dup")?"同じ名前の顧客が複数います。顧客管理の顧客画面から注文書を開いて保存してください。":(r&&r.err==="full"?"保存できませんでした（端末の容量不足の可能性があります）":"顧客管理に該当の顧客が見つかりません。顧客管理に登録して、その顧客画面から注文書を開いてください。");return false}
+_dbSigC=dbSigC();
+if(auto){m.textContent=(m.textContent?m.textContent+" ":"")+"データベースに保存しました"}
+else{m.textContent="データベースに保存しました："+(r.cust.name||"")+" 様の注文履歴（"+r.rec.date+" "+r.rec.formName+"）"+(r.rec.haIdx!=null?"。補聴器の記録（器種名）にも転記しました":"")}
+dbInfoUpdate();
+return true}
+function autoDbSaveC(){try{if(!dbUnsavedC())return;if(!validateOrder().ok)return;doDbSaveC(true)}catch(e){}}
+function askDbSaveC(){return new Promise(res=>{if(!dbNeedAskC()){res(false);return}
+const old=document.getElementById("dbAskModal");if(old)old.remove();
+const ov=document.createElement("div");ov.id="dbAskModal";ov.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:330;display:flex;align-items:center;justify-content:center;padding:14px";
+ov.innerHTML="<div style=\"background:#fff;border-radius:14px;padding:18px;width:100%;max-width:420px\"><b style=\"font-size:16px\">データベースに保存しますか？</b><p style=\"margin:10px 0;font-size:14px;line-height:1.6\">保存しないと、この注文は顧客管理の注文履歴に残りません。（入力内容の下書きは、この端末には残ります）</p><div style=\"display:flex;gap:8px\"><button type=\"button\" data-a=\"yes\" style=\"flex:1;padding:11px;border-radius:8px;border:0;background:#1d4e89;color:#fff;font-weight:700\">保存する</button><button type=\"button\" data-a=\"no\" style=\"flex:1;padding:11px;border-radius:8px;border:1px solid #bbb;background:#fff\">保存しない</button></div></div>";
+document.body.appendChild(ov);
+ov.querySelector("[data-a=yes]").onclick=()=>{ov.remove();res(true)};
+ov.querySelector("[data-a=no]").onclick=()=>{ov.remove();res(false)};
+})}
+document.querySelectorAll("a.back").forEach(a=>{a.addEventListener("click",async e=>{if(!dbNeedAskC())return;e.preventDefault();const href=a.getAttribute("href");if(await askDbSaveC())doDbSaveC(true);location.href=href})});
+addEventListener("beforeunload",e=>{if(dbNeedAskC()){e.preventDefault();e.returnValue=""}});
+function dbSaveCore(){
 const db=loadDb();
 const f=findCust(db);
-if(!f.cust){m.textContent=f.how==="dup"?"同じ名前の顧客が複数います。顧客管理の顧客画面から注文書を開いて保存してください。":"顧客管理に該当の顧客が見つかりません。顧客管理に登録して、その顧客画面から注文書を開いてください。";return}
+if(!f.cust)return{err:f.how};
 const cust=f.cust;
 if(!Array.isArray(cust.orders))cust.orders=[];
 const rec={id:OID||Date.now(),date:(V.odY||"")+"/"+(V.odM||"")+"/"+(V.odD||""),formId:cur.id,mid:MID[cur.id]||cur.id,formName:cur.name,cust:V.cust||cust.name||"",summary:orderSummary(),model:((cur.name||"")+" "+orderSummary().split("／").filter(p=>p&&!/^合計/.test(p)&&!/^(両耳|右耳|左耳)$/.test(p)).join(" ")).trim(),ears:V.ears||"B",total:V.total||"",data:JSON.parse(JSON.stringify(V)),savedAt:Date.now()};
 const ix=cust.orders.findIndex(x=>x.id===rec.id);
 if(ix>=0){rec.st=cust.orders[ix].st||"注文中";if(cust.orders[ix].haIdx!=null)rec.haIdx=cust.orders[ix].haIdx}else{rec.st="注文中"}if(ix>=0)cust.orders[ix]=rec;else cust.orders.push(rec);
 try{if(rec.model){if(!Array.isArray(cust.ha))cust.ha=[];let hi=(rec.haIdx!=null&&cust.ha[rec.haIdx])?rec.haIdx:-1;if(hi<0){const blankE=E=>E&&!E.model&&!E.no;const bi=cust.ha.findIndex(H2=>H2&&!H2.buy&&blankE(H2.R)&&blankE(H2.L));if(bi>=0)hi=bi;else{const nE=()=>({model:"",no:"",vol:"",rc:"",tube:"",ear:"",bat:"",extra:[]});cust.ha.push({buy:"",wr:"",wrY:"",lg:"",lgY:"",lgN:"",lgExp:"",lgAmt:"",extra:[],R:nE(),L:nE()});hi=cust.ha.length-1}rec.haIdx=hi}const H=cust.ha[hi];if(!H.buy&&rec.date)H.buy=rec.date.replace(/\//g,"-");if(rec.ears==="B"||rec.ears==="R")H.R.model=rec.model;if(rec.ears==="B"||rec.ears==="L")H.L.model=rec.model}}catch(e){}
-try{localStorage.setItem("njhc",JSON.stringify(db))}catch(e){m.textContent="保存できませんでした（端末の容量不足の可能性があります）";return}
+try{localStorage.setItem("njhc",JSON.stringify(db))}catch(e){return{err:"full"}}
 OID=rec.id;CID=cust.id;DB_CUST=cust;
-m.textContent="データベースに保存しました："+(cust.name||"")+" 様の注文履歴（"+rec.date+" "+rec.formName+"）"+(rec.haIdx!=null?"。補聴器の記録（器種名）にも転記しました":"");
-dbInfoUpdate();
-};
+return{cust:cust,rec:rec};
+}
+
+$("dbSave").onclick=()=>{doDbSaveC(false)};
 
 $("toCust").onclick=()=>{
 const m=$("msg");
@@ -747,15 +775,10 @@ if(!confirm("顧客管理に紐付いていないため、注文内容は顧客�
 try{localStorage.setItem("njh_custom_v",JSON.stringify(V))}catch(e){}
 location.href="../../customer.html";return;
 }
-const cust=f.cust;
-if(!Array.isArray(cust.orders))cust.orders=[];
-const rec={id:OID||Date.now(),date:(V.odY||"")+"/"+(V.odM||"")+"/"+(V.odD||""),formId:cur.id,mid:MID[cur.id]||cur.id,formName:cur.name,cust:V.cust||cust.name||"",summary:orderSummary(),model:((cur.name||"")+" "+orderSummary().split("／").filter(p=>p&&!/^合計/.test(p)&&!/^(両耳|右耳|左耳)$/.test(p)).join(" ")).trim(),ears:V.ears||"B",total:V.total||"",data:JSON.parse(JSON.stringify(V)),savedAt:Date.now()};
-const ix=cust.orders.findIndex(x=>x.id===rec.id);
-if(ix>=0){rec.st=cust.orders[ix].st||"注文中";if(cust.orders[ix].haIdx!=null)rec.haIdx=cust.orders[ix].haIdx}else{rec.st="注文中"}if(ix>=0)cust.orders[ix]=rec;else cust.orders.push(rec);
-try{if(rec.model){if(!Array.isArray(cust.ha))cust.ha=[];let hi=(rec.haIdx!=null&&cust.ha[rec.haIdx])?rec.haIdx:-1;if(hi<0){const blankE=E=>E&&!E.model&&!E.no;const bi=cust.ha.findIndex(H2=>H2&&!H2.buy&&blankE(H2.R)&&blankE(H2.L));if(bi>=0)hi=bi;else{const nE=()=>({model:"",no:"",vol:"",rc:"",tube:"",ear:"",bat:"",extra:[]});cust.ha.push({buy:"",wr:"",wrY:"",lg:"",lgY:"",lgN:"",lgExp:"",lgAmt:"",extra:[],R:nE(),L:nE()});hi=cust.ha.length-1}rec.haIdx=hi}const H=cust.ha[hi];if(!H.buy&&rec.date)H.buy=rec.date.replace(/\//g,"-");if(rec.ears==="B"||rec.ears==="R")H.R.model=rec.model;if(rec.ears==="B"||rec.ears==="L")H.L.model=rec.model}}catch(e){}
-try{localStorage.setItem("njhc",JSON.stringify(db))}catch(e){m.textContent="保存できませんでした（端末の容量不足の可能性があります）";return}
-OID=rec.id;CID=cust.id;DB_CUST=cust;
-try{localStorage.setItem("njh_open_cust",JSON.stringify({id:cust.id,tab:"o"}))}catch(e){}
+const r=dbSaveCore();
+if(!r||r.err){m.textContent="保存できませんでした（端末の容量不足の可能性があります）";return}
+_dbSigC=dbSigC();
+try{localStorage.setItem("njh_open_cust",JSON.stringify({id:r.cust.id,tab:"o"}))}catch(e){}
 location.href="../../customer.html";
 };
 $("go").onclick=async()=>{
@@ -778,14 +801,14 @@ $("go").onclick=async()=>{
     const name="注文書_"+cur.name.replace(/\s/g,"")+"_"+ymd+".pdf";
     const a=el("a",{href:URL.createObjectURL(new Blob([out],{type:"application/pdf"})),download:name});
     document.body.appendChild(a);a.click();a.remove();
-    m.textContent="保存しました："+name;
+    m.textContent="保存しました："+name;autoDbSaveC();
   }catch(e){m.textContent="保存できませんでした："+(e.message||e)}
 };
 
 $("print").onclick=()=>{
   const check=validateOrder();
   if(!check.ok){$("msg").textContent=check.message;return}
-  draw();window.print();
+  draw();window.print();autoDbSaveC();
 };
 
 // nav
@@ -797,6 +820,7 @@ FORMS.forEach((f,i)=>{
     bg.onload=()=>draw();
     bg.src=cur.img||"";
     build();
+    try{dbBaseC()}catch(e){}
   };
   if(i===0)b.classList.add("on");
   nav.appendChild(b);
@@ -813,6 +837,7 @@ if(cur.img)bg.src=cur.img;
 dbRestore();
 build();
 dbInfoUpdate();
+try{dbBaseC()}catch(e){}
 </script>
 <script>
 // 「補聴器と備品」ボタンとヒントをボタン列（.bar）の中へまとめ、下部固定バーに含める

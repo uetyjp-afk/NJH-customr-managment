@@ -747,7 +747,7 @@ function sigOfDr(dr){if(!dr)return '';return JSON.stringify({s:dr.ST,f:dr.fields
 function dbSigNow(){try{saveHaDraft();return sigOfDr(loadHaDraft(FM.id))}catch(e){return ''}}
 function dbHasContent(){try{const dr=loadHaDraft(FM.id);if(!dr)return false;const f=dr.fields||{};if(f.name||f.kana||f.age||f.note)return true;return Object.keys(dr.ST||{}).some(k=>{const v=dr.ST[k];return Array.isArray(v)?v.length:!!v})}catch(e){return false}}
 function dbUnsaved(){if(!FM||VIEWOPEN||!dbCid())return false;const s=dbSigNow();if(!s||!dbHasContent())return false;return s!==_dbSig}
-function dbNeedAsk(){return dbUnsaved()&&dbSigNow()!==_openSig}
+function dbNeedAsk(){if(!dbUnsaved())return false;const s=dbSigNow();return s!==_openSig||(_dbSig!==null&&_dbSig!==_openSig)}
 function dbBase(){const s=dbSigNow();_openSig=s;try{const qp=new URLSearchParams(location.search);const oid=qp.get('oid')||(PRE&&PRE.oid);_dbSig=oid?s:null}catch(e){_dbSig=null}}
 function autoDbSave(){try{if(!dbUnsaved())return;doDbSave(true)}catch(e){}}
 function askDbSave(){return new Promise(res=>{if(!dbNeedAsk()){res(false);return}

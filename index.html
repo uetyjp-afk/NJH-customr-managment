@@ -1118,7 +1118,7 @@ img,canvas,table{max-width:100%}
     <div class="footer-note">
         リンク先：<a href="https://www.njha.co.jp/dealers/" target="_blank" rel="noopener">NJH 販売店向け資料ページ</a>
     </div>
-    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v88</div>
+    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v89</div>
 </div>
 
 <!-- パーツ注文リスト -->
@@ -3222,6 +3222,10 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script>window.addEventListener('pageshow',function(e){if(e.persisted)location.reload()});</script>
 <script>
 (function(){try{var D=JSON.parse(localStorage.getItem('njhc')||'null');if(!D||!D.cs)return;var now=new Date();var td=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');var list=[];D.cs.forEach(function(c){if(c.rsv&&c.rsv.date===td)list.push({id:c.id,name:c.name||'（未入力）',time:c.rsv.time||'',kind:c.rsv.kind||'',note:c.rsv.note||''})});list.sort(function(a,b){return (a.time||'99:99').localeCompare(b.time||'99:99')});var sr=document.getElementById('stRsv');if(sr)sr.innerHTML=list.length+'<span class="unit">件</span>';var b=document.getElementById('dashRsv');if(b&&list.length){b.textContent='本日 '+list.length+'件';b.style.display='inline-block'}var p=document.getElementById('todayRsv');if(p&&list.length){var wd='日月火水木金土'[now.getDay()];var esc2=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(ch){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]})};p.innerHTML='<b style="color:#0a4630">🗓 本日の予約（'+(now.getMonth()+1)+'/'+now.getDate()+'・'+wd+'）― '+list.length+'件</b>'+list.map(function(r){return '<div onclick="try{localStorage.setItem(\'njh_open_cust\',JSON.stringify({id:'+r.id+',tab:\'b\'}))}catch(e){};location.href=\'./customer.html\'" style="display:flex;gap:10px;align-items:center;padding:8px 2px;border-bottom:1px solid #f0efe8;cursor:pointer"><span style="font-weight:900;color:#0a4630;font-variant-numeric:tabular-nums;width:44px;flex:none">'+(r.time||'—')+'</span><span style="flex:1"><b>'+esc2(r.name)+' 様</b>'+(r.note?' <small style="color:#77817a">'+esc2(r.note)+'</small>':'')+'</span>'+(r.kind?'<span style="font-size:10px;font-weight:700;background:#e9f2ec;color:#0a4630;border-radius:6px;padding:2px 7px;flex:none">'+esc2(r.kind)+'</span>':'')+'</div>'}).join('');p.style.display='block';var lb=document.getElementById('todayRsvLabel');if(lb)lb.style.display='flex'}}catch(e){}})();
+</script>
+<button id="toTop" type="button" aria-label="一番上に戻る" style="display:none;position:fixed;right:14px;bottom:20px;z-index:90;width:56px;height:56px;border-radius:50%;background:#0a4630;color:#fff;border:2px solid #fff;font-size:25px;font-weight:700;box-shadow:0 6px 16px rgba(0,0,0,.35);cursor:pointer;padding:0">↑</button>
+<script>
+(function(){var b=document.getElementById('toTop');if(!b)return;function upd(){b.style.display=window.scrollY>500?'block':'none'}window.addEventListener('scroll',upd,{passive:true});b.addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'})});upd()})();
 </script>
 </body>
 </html>

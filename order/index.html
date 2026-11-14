@@ -89,10 +89,11 @@ header h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   main{padding-bottom:240px}
 }
 .moldBtn{display:block;width:100%;margin:8px 0;padding:14px 12px;border:0;border-radius:10px;background:#d97706;color:#fff;font-size:16px;font-weight:700;cursor:pointer;animation:moldBlink 1.1s ease-in-out infinite}
+.dbblink{animation:moldBlink 1.1s ease-in-out infinite}
 @keyframes moldBlink{0%,100%{opacity:1}50%{opacity:.4}}
 .moldBack{display:block;width:100%;margin:8px 0;padding:11px 12px;border:2px solid #1d4e89;border-radius:10px;background:#fff;color:#1d4e89;font-size:15px;font-weight:700;cursor:pointer}
 </style></head><body>
-<header><button class="back" id="back" hidden>‹ 戻る</button><h1 id="ttl">NJH 補聴器 ご注文書 作成</h1><nav class="hnav"><button type="button" id="topNew" style="border:0;color:#fff;background:#a5813f;border-radius:14px;padding:6px 9px;font-size:12px;white-space:nowrap">＋ 新規注文（最初から）</button><a href="../index.html" style="background:#0a4630;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap">🏠 ホームに戻る</a><a href="../customer.html" onclick="try{var c=new URLSearchParams(location.search).get('cid')||(typeof PRE!=='undefined'&&PRE?PRE.cid:null);if(c)localStorage.setItem('njh_open_cust',JSON.stringify({id:c,tab:'o'}))}catch(e){}" style="background:#0e6b47;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap;margin-left:8px">💾 顧客管理へ移動</a><a href="../index.html#cart" id="navParts">🔩 パーツ注文</a><a href="../index.html#repair">🔧 修理可否</a><span style="font-size:11px;opacity:.7;margin-left:8px">v64</span></nav></header>
+<header><button class="back" id="back" hidden>‹ 戻る</button><h1 id="ttl">NJH 補聴器 ご注文書 作成</h1><nav class="hnav"><button type="button" id="topNew" style="border:0;color:#fff;background:#a5813f;border-radius:14px;padding:6px 9px;font-size:12px;white-space:nowrap">＋ 新規注文（最初から）</button><a href="../index.html" style="background:#0a4630;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap">🏠 ホームに戻る</a><a href="../customer.html" onclick="try{var c=new URLSearchParams(location.search).get('cid')||(typeof PRE!=='undefined'&&PRE?PRE.cid:null);if(c)localStorage.setItem('njh_open_cust',JSON.stringify({id:c,tab:'o'}))}catch(e){}" style="background:#0e6b47;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap;margin-left:8px">💾 顧客管理へ移動</a><a href="../index.html#cart" id="navParts">🔩 パーツ注文</a><a href="../index.html#repair">🔧 修理可否</a><span style="font-size:11px;opacity:.7;margin-left:8px">v65</span></nav></header>
 <main>
 <section id="v1"><p class="note" style="text-align:center;margin-top:20px">メーカーを選んでください</p><div class="tiles" id="tiles"></div></section>
 <section id="v2" hidden><div class="list" id="list"></div></section>
@@ -118,7 +119,7 @@ header h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 <label class="f">縦 <span id="dyv">0</span></label><input type="range" id="dy" min="-8" max="8" step="0.5" value="0"></details></fieldset>
 </div>
 <div class="pv">
-<div class="bar"><button class="btn" id="bPrint">印刷 / FAX</button><button class="btn" id="bMail">メールで送る</button><button class="btn" id="bSharePdf" style="background:#06c755">PDFを送る（LINEなど）</button><button class="btn s" id="bPdf">PDF保存</button><button class="btn s" id="bPng">画像保存</button><button class="btn s" id="bClr">入力を消す（この注文書だけ）</button><button class="btn s" id="bHist">📋 注文履歴</button><button class="btn s" id="bForms" style="background:#e8f3ee;border-color:#0e6b47;color:#0a4630;font-weight:700">📄 他の様式を開く</button><button class="btn s" id="bDb" style="background:#1d4e89;color:#fff">🗄 データベースに保存</button><button class="btn" id="bNew" style="background:#a5813f">新規注文（最初から）</button><button class="btn" id="bBoth" disabled style="background:#2b6cb0;width:100%;margin-top:8px">補聴器と備品の注文を送る（PDFまとめて）</button><p id="bothHint" style="width:100%;margin:6px 0 0;font-size:12px;color:#b45309;line-height:1.5"></p><button class="btn" id="bMold" disabled style="background:#b45309;width:100%;margin-top:8px">補聴器とモールドの注文を送る（PDFまとめて）</button><p id="moldHint" style="width:100%;margin:6px 0 0;font-size:12px;color:#b45309;line-height:1.5"></p></div>
+<div class="bar"><button class="btn" id="bPrint">印刷 / FAX</button><button class="btn" id="bMail">メールで送る</button><button class="btn" id="bSharePdf" style="background:#06c755">PDFを送る（LINEなど）</button><button class="btn s" id="bPdf">PDF保存</button><button class="btn s" id="bPng">画像保存</button><button class="btn s" id="bClr">入力を消す（この注文書だけ）</button><button class="btn s" id="bHist">📋 注文履歴</button><button class="btn s" id="bForms" style="background:#e8f3ee;border-color:#0e6b47;color:#0a4630;font-weight:700">📄 他の様式を開く</button><button class="btn s" id="bDb" style="background:#1d4e89;color:#fff">💾 顧客の注文履歴に保存</button><button class="btn" id="bNew" style="background:#a5813f">新規注文（最初から）</button><button class="btn" id="bBoth" disabled style="background:#2b6cb0;width:100%;margin-top:8px">補聴器と備品の注文を送る（PDFまとめて）</button><p id="bothHint" style="width:100%;margin:6px 0 0;font-size:12px;color:#b45309;line-height:1.5"></p><button class="btn" id="bMold" disabled style="background:#b45309;width:100%;margin-top:8px">補聴器とモールドの注文を送る（PDFまとめて）</button><p id="moldHint" style="width:100%;margin:6px 0 0;font-size:12px;color:#b45309;line-height:1.5"></p></div>
 <div id="warns"></div>
 <canvas id="cv" aria-label="ご注文書プレビュー"></canvas>
 <p class="note">FAX：印刷画面でFAX対応のプリンタ／複合機を選択。<br>
@@ -283,7 +284,7 @@ function openForm(f){
     location.href="./custom/index.html?"+p.toString();
     return;
   }
-  FM=f;ST={};ls.set('njh_ha_current_form_v1',f.id);FM.groups.forEach(g=>{if(g.t==='ear'&&/レシーバー/.test(g.title)){g.req=1;if(g.items.length===1)g.auto=g.items[0].k}});const c=BR[f.brand];document.documentElement.style.setProperty('--g',c[2]);$('ttl').textContent=f.name;
+  FM=f;ST={};ls.set('njh_ha_current_form_v1',f.id);try{dbBtnLabel()}catch(e){}FM.groups.forEach(g=>{if(g.t==='ear'&&/レシーバー/.test(g.title)){g.req=1;if(g.items.length===1)g.auto=g.items[0].k}});const c=BR[f.brand];document.documentElement.style.setProperty('--g',c[2]);$('ttl').textContent=f.name;
   buildGroups();$('gender').innerHTML='';
   ['男','女'].forEach(v=>{const lb=document.createElement('label');lb.innerHTML=`<input type="radio" name="gender" value="${v}"><span>${v}</span>`;const i=lb.firstChild;i.onchange=()=>{ST.gender=v;saveHaDraft();upd()};i.onclick=()=>{if(ST.gender===v&&i.dataset.on){i.checked=false;ST.gender='';i.dataset.on='';saveHaDraft();upd()}else{i.dataset.on='1'}};$('gender').appendChild(lb)});
   ['kana','name','age','note','wishDate'].forEach(k=>$(k).value='');
@@ -548,7 +549,7 @@ function bothState(){
   else if(!n)m='パーツ・備品が未入力です（「🔩 パーツ注文」で追加してください）';
   if(h)h.textContent=m;
 }
-function haSync(){bothState();moldBothState();clearTimeout(snapT);snapT=setTimeout(snapHa,800)}
+function haSync(){bothState();moldBothState();try{dbBtnState()}catch(e){}clearTimeout(snapT);snapT=setTimeout(snapHa,800)}
 function openMoldForm(){if(!FM||FM.mold)return;const t=FM.brand==='Beltone'?'bel_mold':FM.brand==='Unitron'?'uni_mold':null;if(!t)return;saveHaDraft();try{sessionStorage.setItem('njh_mold_from',FM.id)}catch(e){}location.hash='form-'+t}
 function openEarMold(){if(!FM||FM.emold)return;saveHaDraft();try{sessionStorage.setItem('njh_mold_from',FM.id)}catch(e){}location.hash='form-ear_mold'}
 function backFromMold(){let from=null;try{from=sessionStorage.getItem('njh_mold_from')}catch(e){}if(from)location.hash='form-'+from}
@@ -749,17 +750,22 @@ function dbSigNow(){try{saveHaDraft();return sigOfDr(loadHaDraft(FM.id))}catch(e
 function dbHasContent(){try{const dr=loadHaDraft(FM.id);if(!dr)return false;const f=dr.fields||{};if(f.name||f.kana||f.age||f.note)return true;return Object.keys(dr.ST||{}).some(k=>{const v=dr.ST[k];return Array.isArray(v)?v.length:!!v})}catch(e){return false}}
 function dbUnsaved(){if(!FM||VIEWOPEN||!dbCid())return false;const s=dbSigNow();if(!s||!dbHasContent())return false;return s!==_dbSig}
 function dbNeedAsk(){if(!dbUnsaved())return false;const s=dbSigNow();return s!==_openSig||(_dbSig!==null&&_dbSig!==_openSig)}
+function dbCustName(){try{const cid=dbCid();if(cid){const db=JSON.parse(localStorage.getItem('njhc')||'null');const cu=db&&db.cs.find(x=>String(x.id)===String(cid));if(cu&&cu.name)return cu.name}return (PRE&&PRE.name)||''}catch(e){return ''}}
+function dbBtnLabel(){const b=$('bDb');if(!b)return;const n=dbCustName();b.textContent=n?('💾 '+n+'様の注文履歴に保存'):'💾 顧客の注文履歴に保存'}
+function dbAskTitle(){const n=dbCustName();return n?('この注文を '+n+'様の注文履歴に保存しますか？'):'この注文を注文履歴に保存しますか？'}
+function dbSavedMsg(){const n=dbCustName();return n?(n+'様の注文履歴に保存しました'):'注文履歴に保存しました'}
+function dbBtnState(){const b=$('bDb');if(!b)return;let on=false;try{on=!!FM&&!VIEWOPEN&&HA_OK&&dbUnsaved()}catch(e){}b.classList.toggle('dbblink',!!on)}
 function dbBase(){const s=dbSigNow();_openSig=s;try{const qp=new URLSearchParams(location.search);const oid=qp.get('oid')||(PRE&&PRE.oid);_dbSig=oid?s:null}catch(e){_dbSig=null}}
 function autoDbSave(){try{if(!dbUnsaved())return;doDbSave(true)}catch(e){}}
 function askDbSave(){return new Promise(res=>{if(!dbNeedAsk()){res(false);return}
 const old=document.getElementById('dbAskModal');if(old)old.remove();
 const ov=document.createElement('div');ov.id='dbAskModal';ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:330;display:flex;align-items:center;justify-content:center;padding:14px';
-ov.innerHTML='<div style="background:#fff;border-radius:14px;padding:18px;width:100%;max-width:420px"><b style="font-size:16px">データベースに保存しますか？</b><p style="margin:10px 0;font-size:14px;line-height:1.6">保存しないと、この注文は顧客管理の注文履歴に残りません。（入力内容の下書きは、この端末には残ります）</p><div style="display:flex;gap:8px"><button type="button" data-a="yes" style="flex:1;padding:11px;border-radius:8px;border:0;background:#1d4e89;color:#fff;font-weight:700">保存する</button><button type="button" data-a="no" style="flex:1;padding:11px;border-radius:8px;border:1px solid #bbb;background:#fff">保存しない</button></div></div>';
+ov.innerHTML='<div style="background:#fff;border-radius:14px;padding:18px;width:100%;max-width:420px"><b style="font-size:16px">'+dbAskTitle()+'</b><p style="margin:10px 0;font-size:14px;line-height:1.6">保存しないと、この注文は顧客管理の注文履歴に残りません。（入力内容の下書きは、この端末には残ります）</p><div style="display:flex;gap:8px"><button type="button" data-a="yes" style="flex:1;padding:11px;border-radius:8px;border:0;background:#1d4e89;color:#fff;font-weight:700">保存する</button><button type="button" data-a="no" style="flex:1;padding:11px;border-radius:8px;border:1px solid #bbb;background:#fff">保存しない</button></div></div>';
 document.body.appendChild(ov);
 ov.querySelector('[data-a=yes]').onclick=()=>{ov.remove();res(true)};
 ov.querySelector('[data-a=no]').onclick=()=>{ov.remove();res(false)};
 })}
-function doDbSave(auto){try{const say=(t,x)=>{if(auto){if(t==='保存しました')toast('データベースに保存しました')}else dbMsg(t,x)};
+function doDbSave(auto){try{const say=(t,x)=>{if(auto){if(t==='保存しました')toast(dbSavedMsg())}else dbMsg(t,x)};
 const qp=new URLSearchParams(location.search);const cid=qp.get('cid')||(PRE&&PRE.cid)||null;
 if(!cid){say('保存できません','顧客管理の顧客画面から開いた注文書だけ、履歴に保存できます。保存した注文は、顧客管理の「注文」タブと、この注文書の「注文履歴」ボタンで見られます。');return}
 saveHaDraft();const dr=loadHaDraft(FM.id);if(!dr){say('保存できません','保存する内容がありません。入力を確認してください。');return}
@@ -817,8 +823,8 @@ rows.sort((a,b)=>(b.o.savedAt||0)-(a.o.savedAt||0));
 const old=document.getElementById('histModal');if(old)old.remove();
 const ov=document.createElement('div');ov.id='histModal';ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;display:flex;align-items:center;justify-content:center;padding:14px';
 const escH=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const body=rows.length?rows.slice(0,50).map(r=>'<div style="display:flex;gap:8px;align-items:center;border-top:1px solid #e3e9ee;padding:8px 0"><div style="flex:1"><b>'+escH(r.o.date||'')+'</b> '+escH(r.o.formName||'')+'<br><small>'+escH(r.cname)+' 様'+(r.o.model?'／'+escH(r.o.model):'')+(r.o.st?'／'+escH(r.o.st):'')+'</small></div><button type="button" data-cid="'+r.cid+'" data-oid="'+r.o.id+'" data-fid="'+escH(r.o.formId||'')+'" style="padding:8px 12px;border-radius:8px;border:1px solid #1d4e89;background:#1d4e89;color:#fff">開く</button></div>').join(''):'<p>保存された注文はまだありません。注文書の「データベースに保存」で保存すると、ここに表示されます。</p>';
-ov.innerHTML='<div style="background:#fff;border-radius:14px;padding:16px;width:100%;max-width:520px;max-height:85vh;overflow:auto"><b style="font-size:16px">📋 注文履歴</b><p style="font-size:12px;color:#555;margin:6px 0">データベースに保存した注文です。顧客管理の各顧客の「注文」タブでも同じ履歴が見られます。</p>'+body+'<button type="button" id="histClose" style="width:100%;margin-top:10px;padding:10px;border-radius:8px;border:1px solid #bbb;background:#fff">閉じる</button></div>';
+const body=rows.length?rows.slice(0,50).map(r=>'<div style="display:flex;gap:8px;align-items:center;border-top:1px solid #e3e9ee;padding:8px 0"><div style="flex:1"><b>'+escH(r.o.date||'')+'</b> '+escH(r.o.formName||'')+'<br><small>'+escH(r.cname)+' 様'+(r.o.model?'／'+escH(r.o.model):'')+(r.o.st?'／'+escH(r.o.st):'')+'</small></div><button type="button" data-cid="'+r.cid+'" data-oid="'+r.o.id+'" data-fid="'+escH(r.o.formId||'')+'" style="padding:8px 12px;border-radius:8px;border:1px solid #1d4e89;background:#1d4e89;color:#fff">開く</button></div>').join(''):'<p>保存された注文はまだありません。注文書の保存ボタンで保存すると、ここに表示されます。</p>';
+ov.innerHTML='<div style="background:#fff;border-radius:14px;padding:16px;width:100%;max-width:520px;max-height:85vh;overflow:auto"><b style="font-size:16px">📋 注文履歴</b><p style="font-size:12px;color:#555;margin:6px 0">保存した注文の一覧です。顧客管理の各顧客の「注文」タブでも同じ履歴が見られます。</p>'+body+'<button type="button" id="histClose" style="width:100%;margin-top:10px;padding:10px;border-radius:8px;border:1px solid #bbb;background:#fff">閉じる</button></div>';
 document.body.appendChild(ov);
 ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
 ov.querySelector('#histClose').onclick=()=>ov.remove();

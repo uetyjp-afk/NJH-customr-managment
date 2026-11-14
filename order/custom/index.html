@@ -62,6 +62,7 @@ input:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(--ac) 35%,tra
 .go{flex:1;min-width:180px;border:0;border-radius:10px;background:var(--ac);color:#fff;padding:12px;font:inherit;font-weight:700;cursor:pointer}
 .go:disabled{opacity:.5}
 .sub{border:1px solid var(--ln);background:transparent;color:var(--tx);border-radius:10px;padding:11px 14px;font:inherit;cursor:pointer}
+.dbblink{animation:dbBlinkC 1.1s ease-in-out infinite}@keyframes dbBlinkC{0%,100%{opacity:1}50%{opacity:.35}}
 #msg{font-size:12.5px;color:var(--mu);margin-top:6px;min-height:1.4em}
 .hint{font-size:12px;color:var(--mu)}
 .back{display:inline-block;margin:0 0 8px;color:var(--ac);text-decoration:none;font-size:13px}
@@ -113,7 +114,7 @@ h2{font-size:14px;background:var(--ac2);border-bottom:0;border-radius:8px;paddin
       <button class="go" id="go">PDFで保存</button>
 <button class="sub" id="print" type="button">印刷</button>
 <button class="sub" id="toParts" type="button">🔩 備品も注文</button>
-<button class="sub" id="dbSave" type="button">🗄 データベースに保存</button>
+<button class="sub" id="dbSave" type="button">💾 顧客の注文履歴に保存</button>
 <button class="sub" id="toCust" type="button" style="background:#2e7d32;color:#fff">💾 保存して顧客管理へ移動</button>
     </div>
 <button class="go" id="both" type="button" disabled style="background:#2b6cb0;margin-top:8px">補聴器と備品の注文を送る（PDFまとめて）</button>
@@ -587,7 +588,7 @@ await idbPut("ha_pdf",{buf:out.buffer.slice(out.byteOffset,out.byteOffset+out.by
 snapping=false;
 bothState();
 }
-function snapSoon(){clearTimeout(snapT);snapT=setTimeout(snapCustom,900);bothState();dbInfoUpdate()}
+function snapSoon(){clearTimeout(snapT);snapT=setTimeout(snapCustom,900);bothState();dbInfoUpdate();dbBtnStateC()}
 function readPartsCart(){
 let cart=[];try{cart=JSON.parse(localStorage.getItem("njh_cart_v1")||"[]")||[]}catch(e){cart=[]}
 let bats={};try{bats=JSON.parse(localStorage.getItem("njh_bat_v3")||"{}")||{}}catch(e){bats={}}
@@ -709,7 +710,12 @@ const db=loadDb();const f=findCust(db);
 if(f.cust){DB_CUST=f.cust;e.textContent="🗄 顧客管理と連携中："+(f.cust.name||"")+" 様（カルテNo."+(f.cust.no||"")+"）"+(OID?"／保存済みの注文を編集中です":"");e.style.color="#2f855a"}
 else if(f.how==="dup"){DB_CUST=null;e.textContent="🗄 同じ名前の顧客が複数いるため、自動で紐付けできません。顧客管理の顧客画面から注文書を開いてください。";e.style.color="#b45309"}
 else{DB_CUST=null;e.textContent="🗄 顧客管理と未連携です（顧客管理の顧客画面から注文書を開くと自動で紐付きます）";e.style.color="#b45309"}
+dbBtnLabelC();
 }
+function dbBtnLabelC(){const b=$("dbSave");if(!b)return;b.textContent=DB_CUST?("💾 "+(DB_CUST.name||"")+"様の注文履歴に保存"):"💾 顧客の注文履歴に保存"}
+function dbAskTitleC(){return DB_CUST?("この注文を "+(DB_CUST.name||"")+"様の注文履歴に保存しますか？"):"この注文を注文履歴に保存しますか？"}
+let _dbBtnTC=0,_dbBtnTimer=null;
+function dbBtnStateC(force){const b=$("dbSave");if(!b)return;const now=Date.now();if(!force&&now-_dbBtnTC<600){clearTimeout(_dbBtnTimer);_dbBtnTimer=setTimeout(()=>dbBtnStateC(true),650);return}_dbBtnTC=now;let on=false;try{on=dbUnsavedC()&&validateOrder().ok}catch(e){}b.classList.toggle("dbblink",!!on)}
 function orderSummary(){
 const parts=[];
 if(cur.id==="smr"){const g=cur.f.find(x=>x.k==="g"),pw=cur.f.find(x=>x.k==="pw");if(g&&V.g!=null)parts.push("グレード"+g.o[V.g][0]);if(pw&&V.pw!=null)parts.push(pw.o[V.pw][0])}
@@ -732,15 +738,15 @@ if(!chk.ok){if(!auto)m.textContent=chk.message;return false}
 const r=dbSaveCore();
 if(!r||r.err){if(!auto)m.textContent=(!r||r.err==="dup")?"同じ名前の顧客が複数います。顧客管理の顧客画面から注文書を開いて保存してください。":(r&&r.err==="full"?"保存できませんでした（端末の容量不足の可能性があります）":"顧客管理に該当の顧客が見つかりません。顧客管理に登録して、その顧客画面から注文書を開いてください。");return false}
 _dbSigC=dbSigC();
-if(auto){m.textContent=(m.textContent?m.textContent+" ":"")+"データベースに保存しました"}
-else{m.textContent="データベースに保存しました："+(r.cust.name||"")+" 様の注文履歴（"+r.rec.date+" "+r.rec.formName+"）"+(r.rec.haIdx!=null?"。補聴器の記録（器種名）にも転記しました":"")}
-dbInfoUpdate();
+if(auto){m.textContent=(m.textContent?m.textContent+" ":"")+(r.cust.name?r.cust.name+"様の注文履歴に保存しました":"注文履歴に保存しました")}
+else{m.textContent="保存しました："+(r.cust.name||"")+" 様の注文履歴（"+r.rec.date+" "+r.rec.formName+"）"+(r.rec.haIdx!=null?"。補聴器の記録（器種名）にも転記しました":"")}
+dbInfoUpdate();dbBtnStateC(true);
 return true}
 function autoDbSaveC(){try{if(!dbUnsavedC())return;if(!validateOrder().ok)return;doDbSaveC(true)}catch(e){}}
 function askDbSaveC(){return new Promise(res=>{if(!dbNeedAskC()){res(false);return}
 const old=document.getElementById("dbAskModal");if(old)old.remove();
 const ov=document.createElement("div");ov.id="dbAskModal";ov.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:330;display:flex;align-items:center;justify-content:center;padding:14px";
-ov.innerHTML="<div style=\"background:#fff;border-radius:14px;padding:18px;width:100%;max-width:420px\"><b style=\"font-size:16px\">データベースに保存しますか？</b><p style=\"margin:10px 0;font-size:14px;line-height:1.6\">保存しないと、この注文は顧客管理の注文履歴に残りません。（入力内容の下書きは、この端末には残ります）</p><div style=\"display:flex;gap:8px\"><button type=\"button\" data-a=\"yes\" style=\"flex:1;padding:11px;border-radius:8px;border:0;background:#1d4e89;color:#fff;font-weight:700\">保存する</button><button type=\"button\" data-a=\"no\" style=\"flex:1;padding:11px;border-radius:8px;border:1px solid #bbb;background:#fff\">保存しない</button></div></div>";
+ov.innerHTML="<div style=\"background:#fff;border-radius:14px;padding:18px;width:100%;max-width:420px\"><b style=\"font-size:16px\">"+dbAskTitleC()+"</b><p style=\"margin:10px 0;font-size:14px;line-height:1.6\">保存しないと、この注文は顧客管理の注文履歴に残りません。（入力内容の下書きは、この端末には残ります）</p><div style=\"display:flex;gap:8px\"><button type=\"button\" data-a=\"yes\" style=\"flex:1;padding:11px;border-radius:8px;border:0;background:#1d4e89;color:#fff;font-weight:700\">保存する</button><button type=\"button\" data-a=\"no\" style=\"flex:1;padding:11px;border-radius:8px;border:1px solid #bbb;background:#fff\">保存しない</button></div></div>";
 document.body.appendChild(ov);
 ov.querySelector("[data-a=yes]").onclick=()=>{ov.remove();res(true)};
 ov.querySelector("[data-a=no]").onclick=()=>{ov.remove();res(false)};

@@ -297,6 +297,19 @@
             display: block;
             animation: fadeIn 0.3s ease;
         }
+        .parts-count {
+            grid-column: 1 / -1;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 2px 0 6px;
+        }
+        .cart-parts-count {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--accent);
+            padding: 2px 0 6px;
+        }
         .part-card {
             background: #fff;
             border: 1.5px solid var(--border);
@@ -1104,7 +1117,7 @@ img,canvas,table{max-width:100%}
     <div class="footer-note">
         リンク先：<a href="https://www.njha.co.jp/dealers/" target="_blank" rel="noopener">NJH 販売店向け資料ページ</a>
     </div>
-    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v81</div>
+    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v82</div>
 </div>
 
 <!-- パーツ注文リスト -->
@@ -1916,13 +1929,18 @@ img,canvas,table{max-width:100%}
     const partsResult = document.getElementById('partsResult');
     const partsSuggest = document.getElementById('partsSuggest');
 
-    function renderPartCards(list) {
+    function renderPartCards(list, total) {
         partsResult.innerHTML = '';
         if (list.length === 0) {
             partsResult.innerHTML = '<div class="no-result">該当するパーツが見つかりませんでした。<br>別のキーワードで試すか、パーツカタログをご確認ください。</div>';
             partsResult.classList.add('show');
             return;
         }
+        const tot = (typeof total === 'number') ? total : list.length;
+        const cnt = document.createElement('div');
+        cnt.className = 'parts-count';
+        cnt.textContent = tot > list.length ? `全${tot}件中 ${list.length}件を表示しています` : `${tot}件見つかりました`;
+        partsResult.appendChild(cnt);
         list.forEach(p => {
             const meta = brandMeta(p.brand);
             const card = document.createElement('div');
@@ -1961,7 +1979,7 @@ img,canvas,table{max-width:100%}
             partsResult.classList.add('show');
             return;
         }
-        renderPartCards(matches);
+        renderPartCards(matches, getMatches(partsQuery.value, 100000).length);
     }
 
     function hideSuggest() {
@@ -2839,14 +2857,16 @@ function cFname() {
         setTimeout(() => { updAddBtn(b); }, 1200);
     });
 
-    function renderCartSearch(list) {
+    function renderCartSearch(list, total) {
         const box = cEl('cartPartsResult');
         if (!box) return;
         if (!list.length) {
             box.innerHTML = '<div class="cart-empty" style="padding:10px;font-size:0.88rem">該当するパーツがありません</div>';
             return;
         }
-        box.innerHTML = list.map(p => {
+        const tot = (typeof total === 'number') ? total : list.length;
+        const cntHtml = `<div class="cart-parts-count">${tot > list.length ? `全${tot}件中 ${list.length}件を表示しています` : `${tot}件見つかりました`}</div>`;
+        box.innerHTML = cntHtml + list.map(p => {
             const meta = brandMeta(p.brand);
             let opts = '';
             if (p.options) {
@@ -2871,7 +2891,7 @@ function cFname() {
             cEl('cartPartsResult').innerHTML = '<div class="cart-empty" style="padding:10px;font-size:0.88rem">キーワードを入力してください</div>';
             return;
         }
-        renderCartSearch(getMatches(q, 12));
+        renderCartSearch(getMatches(q, 12), getMatches(q, 100000).length);
     }
     if (cEl('cartPartsSearchBtn')) {
         cEl('cartPartsSearchBtn').addEventListener('click', runCartSearch);

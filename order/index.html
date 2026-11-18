@@ -41,6 +41,8 @@ input[type=text],input[type=tel],input[type=email],input[type=date],input[type=n
 .bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .pv canvas{width:100%;height:auto;border:1px solid var(--line);border-radius:6px;background:#fff;display:block}
 .warn{background:#fff4d6;color:#6b4a00;border:1px solid #e8c766;border-radius:8px;padding:8px 10px;font-size:13px;margin:8px 0}
+.warnMiss{background:#fdecea;color:#b3261e;border:2px solid #e57373;border-radius:8px;padding:9px 11px;font-size:15px;font-weight:700;margin:8px 0}
+.specbar{background:#e9f2ec;color:#0a4630;border:1.5px solid #0a4630;border-radius:8px;padding:8px 11px;font-size:15px;font-weight:700;margin:8px 0}
 .note{font-size:12px;color:var(--sub)}
 #toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s}
 #toast.on{opacity:1}
@@ -93,7 +95,7 @@ header h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @keyframes moldBlink{0%,100%{opacity:1}50%{opacity:.4}}
 .moldBack{display:block;width:100%;margin:8px 0;padding:11px 12px;border:2px solid #1d4e89;border-radius:10px;background:#fff;color:#1d4e89;font-size:15px;font-weight:700;cursor:pointer}
 </style></head><body>
-<header><button class="back" id="back" hidden>‹ 戻る</button><h1 id="ttl">NJH 補聴器 ご注文書 作成</h1><nav class="hnav"><button type="button" id="topNew" style="border:0;color:#fff;background:#a5813f;border-radius:14px;padding:6px 9px;font-size:12px;white-space:nowrap">＋ 新規注文（最初から）</button><a href="../index.html" style="background:#0a4630;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap">🏠 ホームに戻る</a><a href="../customer.html" onclick="try{var c=new URLSearchParams(location.search).get('cid')||(typeof PRE!=='undefined'&&PRE?PRE.cid:null);if(c)localStorage.setItem('njh_open_cust',JSON.stringify({id:c,tab:'o'}))}catch(e){}" style="background:#0e6b47;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap;margin-left:8px">💾 顧客管理へ移動</a><a href="../index.html#cart" id="navParts">🔩 パーツ注文</a><a href="../index.html#repair">🔧 修理可否</a><span style="font-size:11px;opacity:.7;margin-left:8px">v69</span></nav></header>
+<header><button class="back" id="back" hidden>‹ 戻る</button><h1 id="ttl">NJH 補聴器 ご注文書 作成</h1><nav class="hnav"><button type="button" id="topNew" style="border:0;color:#fff;background:#a5813f;border-radius:14px;padding:6px 9px;font-size:12px;white-space:nowrap">＋ 新規注文（最初から）</button><a href="../index.html" style="background:#0a4630;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap">🏠 ホームに戻る</a><a href="../customer.html" onclick="try{var c=new URLSearchParams(location.search).get('cid')||(typeof PRE!=='undefined'&&PRE?PRE.cid:null);if(c)localStorage.setItem('njh_open_cust',JSON.stringify({id:c,tab:'o'}))}catch(e){}" style="background:#0e6b47;color:#fff;font-weight:700;padding:7px 14px;border-radius:999px;text-decoration:none;display:inline-block;font-size:14px;white-space:nowrap;margin-left:8px">💾 顧客管理へ移動</a><a href="../index.html#cart" id="navParts">🔩 パーツ注文</a><a href="../index.html#repair">🔧 修理可否</a><span style="font-size:11px;opacity:.7;margin-left:8px">v70</span></nav></header>
 <main>
 <section id="v1"><p class="note" style="text-align:center;margin-top:20px">メーカーを選んでください</p><div class="tiles" id="tiles"></div></section>
 <section id="v2" hidden><div class="list" id="list"></div></section>
@@ -333,7 +335,8 @@ function upd(){if(!FM)return;FM.groups.forEach(g=>{if(g.t==='ear'&&g.msel)['R','
  const eBtn=(FM.id==='stride_sp'&&ST.tiptype==='mold'&&!VIEWOPEN)?'<button type="button" class="moldBtn" onclick="openEarMold()">イヤーモールド注文書を開く</button>':'';
  let mFrom=null;try{mFrom=sessionStorage.getItem('njh_mold_from')}catch(e){}
  const bBtn=((FM.mold||FM.emold)&&mFrom&&!VIEWOPEN)?`<button type="button" class="moldBack" onclick="backFromMold()">← 補聴器の注文書に戻る</button>`:'';
- $('warns').innerHTML=(w.length?`<div class="warn">未入力：${w.join('、')}</div>`:'')+bBtn+mBtn+eBtn+(mold?'<div class="warn">モールド／プレートモールド（UP）は「モールド専用注文書」と「耳型」を添付してFAXしてください。</div>':'');
+ const sgX=FM.groups.find(g=>g.title.replace(/^[①②③] /,'')==='仕様'&&showG(g))||FM.groups.find(g=>(g.title||'').indexOf('仕様')>=0&&showG(g));let specHtml='';if(sgX){let siL='';if(sgX.t==='radio'){const itX=sgX.items.find(i=>i.k===ST[sgX.id]);if(itX)siL=itX.l}else if(sgX.t==='ear'){const ppX=e=>EA(ST[sgX.id+e]).map(v=>{const itX=sgX.items.find(i=>i.k===v);return itX?itX.l:''}).filter(Boolean).join('・');const prX=ppX('R'),plX=ppX('L');siL=(prX?'右：'+prX:'')+(prX&&plX?'　':'')+(plX?'左：'+plX:'')}if(siL)specHtml=`<div class="specbar">仕様：${siL}</div>`}
+$('warns').innerHTML=specHtml+(w.length?`<div class="warnMiss">⚠ 未入力：${w.join('、')}</div>`:'')+bBtn+mBtn+eBtn+(mold?'<div class="warn">モールド／プレートモールド（UP）は「モールド専用注文書」と「耳型」を添付してFAXしてください。</div>':'');
  HA_OK=(w.length===0);haSync();saveHaDraft();refresh();draw()}
 function ymd(v){if(!v)return['','',''];const p=v.split('-');return[p[0],String(+p[1]),String(+p[2])]}
 function draw(){if(!ready||!FM)return;const W=cv.width,Hh=cv.height,ox=+$('dx').value,oy=+$('dy').value,S=S2;cx.clearRect(0,0,W,Hh);cx.drawImage(IMG,0,0);cx.fillStyle=cx.strokeStyle='#111';cx.textBaseline='middle';

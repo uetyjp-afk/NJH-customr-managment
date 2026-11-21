@@ -907,6 +907,17 @@
         .rp-state.ng { background: #fed7d7; color: #9b2c2c; }
         .rp-state.now { background: #feebc8; color: #975a16; }
         .rp-state.soon { background: #fefcbf; color: #744210; }
+        .rp-rec { margin-top: 8px; width: 100%; padding: 8px 10px; border-radius: 8px; border: 1.5px solid #0a4630; background: #fff; color: #0a4630; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
+        .rp-rec.done { background: #0a4630; color: #fff; }
+        .rprec-ov { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 300; display: flex; align-items: flex-end; justify-content: center; }
+        .rprec-box { background: #fff; width: 100%; max-width: 520px; max-height: 82vh; overflow: auto; border-radius: 14px 14px 0 0; padding: 16px; box-sizing: border-box; }
+        .rprec-head { display: flex; justify-content: space-between; align-items: center; font-size: 1rem; }
+        .rprec-x { border: none; background: none; font-size: 1.3rem; cursor: pointer; padding: 2px 8px; }
+        .rprec-sum { font-size: 0.85rem; color: #4a5568; line-height: 1.6; margin: 6px 0 10px; }
+        #rpPickQ { width: 100%; padding: 9px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.95rem; box-sizing: border-box; }
+        .rprec-item { display: block; width: 100%; text-align: left; padding: 10px 12px; margin: 6px 0; border: 1px solid var(--border); border-radius: 10px; background: #fff; font-size: 0.95rem; cursor: pointer; }
+        .rprec-item small { color: #718096; }
+        .rprec-msg { color: #718096; font-size: 0.9rem; padding: 10px 2px; line-height: 1.7; }
         .rp-dates { font-size: 0.82rem; color: var(--muted); }
         .rp-none { background: #f7fafc; border: 1.5px dashed var(--border); border-radius: 10px; padding: 16px; line-height: 1.7; font-size: 0.92rem; }
         .rp-all { margin-top: 12px; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
@@ -1118,7 +1129,7 @@ img,canvas,table{max-width:100%}
     <div class="footer-note">
         リンク先：<a href="https://www.njha.co.jp/dealers/" target="_blank" rel="noopener">NJH 販売店向け資料ページ</a>
     </div>
-    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v92</div>
+    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v93</div>
 </div>
 
 <!-- パーツ注文リスト -->
@@ -3133,13 +3144,14 @@ function cFname() {
     let rpBrand = 'all';
     const rpInput = cEl('rpInput'), rpResult = cEl('rpResult');
 
-    function rpCard(r) {
+    function rpCard(r, i) {
         const st = rpState(r.e);
         return `<div class="rp-card b-${r.b}">
             <div class="rp-top"><span class="rp-brand ${r.b}">${r.b}</span><span class="rp-type">${cEsc(r.t)}</span></div>
             <div class="rp-name">${cEsc(r.n)}</div>
             <span class="rp-state ${st}">${rpStateLabel(st, r.e)}</span>
-            <div class="rp-dates">販売終了 ${r.s} ／ 修理期間満了 ${r.e}</div></div>`;
+            <div class="rp-dates">販売終了 ${r.s} ／ 修理期間満了 ${r.e}</div>
+            <button type="button" class="rp-rec" data-rpidx="${i}">📋 この結果を顧客の修理記録へ入れる</button></div>`;
     }
     function rpSearch() {
         const raw = rpInput.value.trim();
@@ -3152,9 +3164,58 @@ function cFname() {
                 機種名の表記を変えて再検索するか、<a href="${REPAIR_PDF}" target="_blank" rel="noopener">一覧表PDF</a>またはNJHへご確認ください。</div>`;
             return;
         }
-        rpResult.innerHTML = hits.slice(0, 30).map(rpCard).join('') +
+        rpHits = hits.slice(0, 30);
+        rpResult.innerHTML = rpHits.map((r, i) => rpCard(r, i)).join('') +
             (hits.length > 30 ? `<div class="rp-foot">他 ${hits.length - 30} 件あります。キーワードを絞り込んでください。</div>` : '');
     }
+    /* 修理可否チェックの結果を、顧客管理の修理記録へ転記する（顧客データ njhc と同一オリジンの Edition 1 のみ） */
+    let rpHits = [];
+    let rpPending = null, rpPendingBtn = null;
+    const rpTodayStr = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+    const rpLoadD = () => { try { const D = JSON.parse(localStorage.getItem('njhc') || 'null'); return (D && Array.isArray(D.cs)) ? D : null; } catch (e) { return null; } };
+    const rpStateTxt = st => st === 'ng' ? '修理不能（修理期間満了）' : st === 'now' ? '修理期間満了月（受付可否はNJHへ確認）' : '修理期間満了予定';
+    function rpClosePicker() { const o = cEl('rpPickOv'); if (o) o.remove(); }
+    function rpPickListHtml(q) {
+        const D = rpLoadD();
+        if (!D || !D.cs.length) return '<p class="rprec-msg">顧客データがありません。顧客管理で顧客を登録してからお試しください。</p>';
+        const nq = rpNorm(q || '');
+        const list = D.cs.filter(c => !nq || rpNorm(c.name || '').includes(nq) || rpNorm(c.kana || '').includes(nq) || String(c.no || '').includes(q)).slice(0, 50);
+        if (!list.length) return '<p class="rprec-msg">該当する顧客が見つかりません。</p>';
+        return list.map(c => `<button type="button" class="rprec-item" data-rpcid="${c.id}"><b>${cEsc(c.name || '（未入力）')}</b> 様${c.kana ? ` <small>${cEsc(c.kana)}</small>` : ''}${c.no ? ` <small>No.${cEsc(c.no)}</small>` : ''}</button>`).join('');
+    }
+    function rpOpenPicker(r, btn) {
+        rpClosePicker();
+        rpPending = r; rpPendingBtn = btn;
+        const ov = document.createElement('div');
+        ov.id = 'rpPickOv'; ov.className = 'rprec-ov';
+        ov.innerHTML = `<div class="rprec-box">
+            <div class="rprec-head"><b>どの顧客の修理記録に入れますか？</b><button type="button" class="rprec-x" aria-label="閉じる">×</button></div>
+            <p class="rprec-sum">${cEsc(r.b)} ${cEsc(r.n)}（${cEsc(r.t)}）／${rpStateTxt(rpState(r.e))}／販売終了 ${r.s}／修理期間満了 ${r.e}</p>
+            <input type="text" id="rpPickQ" placeholder="氏名・カナ・カルテNoで検索" autocomplete="off">
+            <div id="rpPickList">${rpPickListHtml('')}</div></div>`;
+        document.body.appendChild(ov);
+        ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('.rprec-x')) rpClosePicker(); });
+        cEl('rpPickQ').addEventListener('input', e => { cEl('rpPickList').innerHTML = rpPickListHtml(e.target.value.trim()); });
+        cEl('rpPickList').addEventListener('click', e => {
+            const b = e.target.closest('[data-rpcid]');
+            if (b) rpSaveToCustomer(b.dataset.rpcid);
+        });
+    }
+    function rpSaveToCustomer(id) {
+        const D = rpLoadD(); if (!D || !rpPending) return;
+        const c = D.cs.find(x => String(x.id) === String(id)); if (!c) return;
+        if (!Array.isArray(c.repairs)) c.repairs = [];
+        const content = `修理可否チェック（${REPAIR_ASOF}現在）：${rpPending.b} ${rpPending.n}（${rpPending.t}）／${rpStateTxt(rpState(rpPending.e))}／販売終了 ${rpPending.s}／修理期間満了 ${rpPending.e}`;
+        c.repairs.push({ date: rpTodayStr(), content, amount: '', photos: [] });
+        try { localStorage.setItem('njhc', JSON.stringify(D)); } catch (e) { alert('保存できませんでした。'); return; }
+        const btn = rpPendingBtn, nm = c.name || '';
+        rpClosePicker(); rpPending = null; rpPendingBtn = null;
+        if (btn) { btn.textContent = `✓ ${nm}様の修理記録に入れました`; btn.classList.add('done'); btn.disabled = true; }
+    }
+    rpResult.addEventListener('click', e => {
+        const b = e.target.closest('[data-rpidx]');
+        if (b && rpHits[+b.dataset.rpidx]) rpOpenPicker(rpHits[+b.dataset.rpidx], b);
+    });
     function rpRenderAll() {
         const groups = [];
         ['Beltone', 'Unitron'].forEach(b => [RP_BTE, RP_ITE].forEach(t => groups.push([b, t])));

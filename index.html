@@ -1129,7 +1129,7 @@ img,canvas,table{max-width:100%}
     <div class="footer-note">
         リンク先：<a href="https://www.njha.co.jp/dealers/" target="_blank" rel="noopener">NJH 販売店向け資料ページ</a>
     </div>
-    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v93</div>
+    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v94</div>
 </div>
 
 <!-- パーツ注文リスト -->
@@ -1376,7 +1376,7 @@ img,canvas,table{max-width:100%}
                 text: "Beltone / Unitron 総合カタログ",
                 answer: `<div class="note">最新版を掲載しています</div>
                     <a href="${BASE}/uploads/202604_%E3%83%99%E3%83%AB%E3%83%88%E3%83%BC%E3%83%B3%E7%B7%8F%E5%90%88%E3%82%AB%E3%82%BF%E3%83%AD%E3%82%B0.pdf" target="_blank" rel="noopener">Beltone 総合カタログ (2026.4)</a>
-                    <a href="${BASE}/uploads/%E3%83%A6%E3%83%8B%E3%83%88%E3%83%AD%E3%83%B3%E7%B7%8F%E5%90%88%E3%82%AB%E3%82%BF%E3%83%AD%E3%82%B0202606.pdf" target="_blank" rel="noopener">Unitron 総合カタログ</a>`
+                    <a href="${BASE}/uploads/%E3%80%90%E6%8E%B2%E8%BC%89%E7%94%A8%E3%80%91%E3%83%A6%E3%83%8B%E3%83%88%E3%83%AD%E3%83%B3%E7%B7%8F%E5%90%88%E3%82%AB%E3%82%BF%E3%83%AD%E3%82%B0202610-%E5%9C%A7%E7%B8%AE.pdf" target="_blank" rel="noopener">Unitron 総合カタログ</a>`
             },
             "q2": {
                 text: "アクセサリーパーツ / 総合支援法カタログ",
@@ -2346,6 +2346,7 @@ img,canvas,table{max-width:100%}
 
     function updateCartUI() {
         document.querySelectorAll('#partsResult .add-btn').forEach(updAddBtn);
+        document.querySelectorAll('#cartPartsResult .cp-add').forEach(b => { b.textContent = cart.some(c => c.id === b.dataset.add) ? '✓ 追加済' : '追加'; });
         const T = cartTotals();
         const bar = cEl('cartBar');
         const hasAny = T.count > 0;
@@ -2943,7 +2944,7 @@ function cFname() {
                     <div class="cp-meta">${cEsc(p.brand)} ／ ${cEsc(p.cat)}${p.price>0?' ／ '+cYen(p.price):''}</div>
                     ${opts}
                 </div>
-                <button type="button" class="cp-add" data-add="${p.id}">追加</button>
+                <button type="button" class="cp-add" data-add="${p.id}">${cart.some(c => c.id === p.id) ? '✓ 追加済' : '追加'}</button>
             </div>`;
         }).join('');
     }
@@ -2973,8 +2974,7 @@ function cFname() {
                 opts = { metal, cord };
             }
             addToCart(id, opts);
-            b.textContent = '追加済';
-            setTimeout(() => { b.textContent = '追加'; }, 1000);
+            b.textContent = '✓ 追加済';
         });
     }
 

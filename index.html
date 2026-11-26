@@ -1129,7 +1129,7 @@ img,canvas,table{max-width:100%}
     <div class="footer-note">
         リンク先：<a href="https://www.njha.co.jp/dealers/" target="_blank" rel="noopener">NJH 販売店向け資料ページ</a>
     </div>
-    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v95</div>
+    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v96</div>
 </div>
 
 <!-- パーツ注文リスト -->
@@ -3138,6 +3138,10 @@ function cFname() {
         const a = y * 12 + m, c = d.getFullYear() * 12 + d.getMonth() + 1;
         return a < c ? 'ng' : (a === c ? 'now' : 'soon');
     };
+    const rpLeft = e => {
+        const [y, m] = e.split('.').map(Number), d = new Date();
+        return (y * 12 + m) - (d.getFullYear() * 12 + d.getMonth() + 1);
+    };
     const rpStateLabel = (st, e) => st === 'ng' ? '🔴 修理不能（修理期間満了）'
         : st === 'now' ? `🟠 修理期間満了月（${e}）— 受付可否はNJHへ確認`
         : `🟡 修理期間満了予定（${e}）`;
@@ -3146,11 +3150,12 @@ function cFname() {
 
     function rpCard(r, i) {
         const st = rpState(r.e);
+        const left = rpLeft(r.e);
         return `<div class="rp-card b-${r.b}">
             <div class="rp-top"><span class="rp-brand ${r.b}">${r.b}</span><span class="rp-type">${cEsc(r.t)}</span></div>
             <div class="rp-name">${cEsc(r.n)}</div>
             <span class="rp-state ${st}">${rpStateLabel(st, r.e)}</span>
-            <div class="rp-dates">販売終了 ${r.s} ／ 修理期間満了 ${r.e}</div>
+            <div class="rp-dates">販売終了 ${r.s} ／ 修理期間満了 ${r.e}${left > 0 ? `（あと${left}ヶ月）` : left === 0 ? '（今月満了）' : ''}</div>
             <button type="button" class="rp-rec" data-rpidx="${i}">📋 この結果を顧客の修理記録へ入れる</button></div>`;
     }
     function rpSearch() {

@@ -890,6 +890,15 @@
         .rp-brands button[data-b="Unitron"].on { background: var(--unitron); border-color: var(--unitron); color: #fff; }
         .rp-input { width: 100%; padding: 13px 14px; font-size: 1rem; font-family: inherit; border: 1.5px solid var(--border); border-radius: 10px; outline: none; }
         .rp-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(49,130,206,0.15); }
+        .rp-input-wrap { position: relative; }
+        .rp-suggest { display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px); background: #fff; border: 1.5px solid var(--border); border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,.12); z-index: 60; overflow: hidden; }
+        .rp-suggest.show { display: block; }
+        .rp-sug-item { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 11px 12px; border: none; border-bottom: 1px solid var(--border); background: #fff; font-family: inherit; font-size: 0.95rem; color: var(--text); cursor: pointer; }
+        .rp-sug-item:last-child { border-bottom: none; }
+        .rp-sug-brand { font-size: 0.7rem; font-weight: 700; color: #fff; padding: 2px 7px; border-radius: 9px; white-space: nowrap; }
+        .rp-sug-brand.Beltone { background: var(--beltone); }
+        .rp-sug-brand.Unitron { background: var(--unitron); }
+        .rp-sug-type { font-size: 0.75rem; color: var(--muted); margin-left: auto; white-space: nowrap; }
         .rp-result { margin-top: 14px; }
         .rp-card {
             background: #fff; border: 1.5px solid var(--border); border-left: 6px solid var(--common);
@@ -1098,7 +1107,10 @@ img,canvas,table{max-width:100%}
             <button type="button" data-b="Beltone">Beltone</button>
             <button type="button" data-b="Unitron">Unitron</button>
         </div>
+        <div class="rp-input-wrap">
         <input type="text" id="rpInput" class="rp-input" placeholder="機種名を入力（例：レジェンド / トゥルー 9 / モクシー）" autocomplete="off">
+        <div id="rpSuggest" class="rp-suggest"></div>
+        </div>
         <div id="rpResult" class="rp-result"></div>
         <details class="rp-all" id="rpAll"></details>
         <p class="rp-foot">修理不能器種一覧表（<span id="rpAsOf"></span>現在）に基づく表示です。推奨後継器種などの詳細は<a id="rpPdf" href="#" target="_blank" rel="noopener">一覧表PDF</a>をご確認ください。最新の受付可否はNJHへお問い合わせください。</p>
@@ -1129,7 +1141,7 @@ img,canvas,table{max-width:100%}
     <div class="footer-note">
         リンク先：<a href="https://www.njha.co.jp/dealers/" target="_blank" rel="noopener">NJH 販売店向け資料ページ</a>
     </div>
-    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v96</div>
+    <div style="text-align:center;font-size:11px;color:#8a97a5;padding:2px 0 6px">NJHシステム v97</div>
 </div>
 
 <!-- パーツ注文リスト -->
@@ -3147,6 +3159,18 @@ function cFname() {
         : `🟡 修理期間満了予定（${e}）`;
     let rpBrand = 'all';
     const rpInput = cEl('rpInput'), rpResult = cEl('rpResult');
+    const rpSuggest = cEl('rpSuggest');
+    let rpSugList = [];
+    function rpHideSuggest() { rpSugList = []; rpSuggest.innerHTML = ''; rpSuggest.classList.remove('show'); }
+    function rpShowSuggest() {
+        const raw = rpInput.value.trim();
+        if (raw.length < 3) { rpHideSuggest(); return; }
+        const terms = raw.split(/[\s　]+/).filter(Boolean).map(t => rpNorm(RP_ALIAS[t.toLowerCase()] || t));
+        rpSugList = repairDB.filter(r => (rpBrand === 'all' || r.b === rpBrand) && terms.every(t => rpNorm(r.n).includes(t))).slice(0, 8);
+        if (!rpSugList.length) { rpHideSuggest(); return; }
+        rpSuggest.innerHTML = rpSugList.map((r, i) => `<button type="button" class="rp-sug-item" data-rpsug="${i}"><span class="rp-sug-brand ${r.b}">${r.b}</span><span>${cEsc(r.n)}</span><span class="rp-sug-type">${cEsc(r.t)}</span></button>`).join('');
+        rpSuggest.classList.add('show');
+    }
 
     function rpCard(r, i) {
         const st = rpState(r.e);
@@ -3236,9 +3260,19 @@ function cFname() {
         rpBrand = b.dataset.b;
         cEl('rpBrands').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
         rpSearch();
+        rpShowSuggest();
     });
     rpInput.addEventListener('input', rpSearch);
-    rpInput.addEventListener('keydown', e => { if (e.key === 'Enter') { rpInput.blur(); rpSearch(); } });
+    rpInput.addEventListener('input', rpShowSuggest);
+    rpInput.addEventListener('keydown', e => { if (e.key === 'Enter') { rpHideSuggest(); rpInput.blur(); rpSearch(); } if (e.key === 'Escape') rpHideSuggest(); });
+    rpSuggest.addEventListener('click', e => {
+        const b = e.target.closest('[data-rpsug]');
+        if (!b || !rpSugList[+b.dataset.rpsug]) return;
+        rpInput.value = rpSugList[+b.dataset.rpsug].n;
+        rpHideSuggest();
+        rpSearch();
+    });
+    document.addEventListener('click', e => { if (!e.target.closest('.rp-input-wrap')) rpHideSuggest(); });
     cEl('rpAsOf').textContent = REPAIR_ASOF;
     cEl('rpPdf').href = REPAIR_PDF;
     rpRenderAll();
